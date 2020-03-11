@@ -5,7 +5,7 @@ import application.controller.json_model.NodeValue;
 import application.controller.json_model.NodesAccuracy;
 import application.model.*;
 import application.repository.*;
-import jdk.nashorn.internal.ir.Assignment;
+//import jdk.nashorn.internal.ir.Assignment;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -165,6 +165,10 @@ public class NodeChildService {
     public void deleteLink(String link_name, String nodeId) {
         Link link = getLink(link_name, nodeId);
         linkRepository.delete(link);
+    }
+
+    public void setAssignmentShortScore(long assignmentLongId, long studentId, int score){
+        assignmentShortRepository.setAnswerScore(assignmentLongId, studentId, score);
     }
 
     public List<StudentAnswer> getStudentAnswersForANode(String course_id, String mindmap_id, String node_id, String username) {

@@ -14,8 +14,9 @@ public class CorsFilter implements Filter {
 
     final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(CorsFilter.class);
     // 跨域地址添加
-    private final List<String> allowedOrigins = Arrays.asList("http://localhost:4200", "http://52.82.39.104:8899",
-            "http://123.207.40.113:8899","http://localhost:8080","http://123.207.40.113:8080");
+    private final List<String> allowedOrigins = Arrays.asList("http://localhost:4200", "http://52.82.76.28:8899", "http://localhost:8899",
+            "http://123.207.40.113:8899","http://localhost:8080","http://123.207.40.113:8080",
+            "http://localhost:80", "http://52.82.76.28:80", "http://52.82.76.28", "http://139.196.80.102", "http://localhost");
 
     public void doFilter2(ServletRequest req, ServletResponse res, FilterChain chain) throws IOException, ServletException {
         HttpServletResponse response = (HttpServletResponse) res;
@@ -43,7 +44,8 @@ public class CorsFilter implements Filter {
 
             // Access-Control-Allow-Origin
             String origin = request.getHeader("Origin");
-            response.setHeader("Access-Control-Allow-Origin", allowedOrigins.contains(origin) ? origin : "");
+            // response.setHeader("Access-Control-Allow-Origin", allowedOrigins.contains(origin) ? origin : "");
+            response.setHeader("Access-Control-Allow-Origin", "*");
             response.setHeader("Vary", "Origin");
 
             // Access-Control-Max-Age

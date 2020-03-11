@@ -8,7 +8,10 @@ import application.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @CrossOrigin
@@ -24,7 +27,7 @@ public class MindmapController {
     @Autowired
     private JenaService jenaService;
 
-    private Gson gson= new Gson();
+    private Gson gson = new Gson();
 
     private String course_id;
     private String mindmap_id;
@@ -46,7 +49,9 @@ public class MindmapController {
 
         if (result_mindmap != null) {
             json = result_mindmap.getJson_string();
-
+            MindmapJson mindmapJson = gson.fromJson(json, MindmapJson.class);
+            Graph graph = mindmapToGraph(mindmapJson);
+            json = gson.toJson(graph);
         }
         return json;
     }
@@ -64,8 +69,8 @@ public class MindmapController {
 
         MindmapIdName[] mindmapList = new MindmapIdName[mindmaps.length];
 
-        for (int i = 0; i < mindmaps.length; i++){
-            mindmapList[i] =new MindmapIdName();
+        for (int i = 0; i < mindmaps.length; i++) {
+            mindmapList[i] = new MindmapIdName();
             mindmapList[i].setId(mindmaps[i].getMindmap_id());
             mindmapList[i].setName(mindmaps[i].getMindmap_name());
         }
@@ -74,7 +79,7 @@ public class MindmapController {
     }
 
     @RequestMapping(value = "/save_mindmap/{course_id}/{mindmap_id}", method = RequestMethod.POST)
-    public Success save_mindmap(@PathVariable String course_id, @PathVariable String mindmap_id,@RequestBody String json_string) {
+    public Success save_mindmap(@PathVariable String course_id, @PathVariable String mindmap_id, @RequestBody String json_string) {
         this.course_id = course_id;
         this.mindmap_id = mindmap_id;
 
@@ -204,7 +209,7 @@ public class MindmapController {
                     }
 
                     if (links.length > 0) {
-                        for (Link l: links) {
+                        for (Link l : links) {
                             String linkAddress = l.getLink_address();
                             nodeChildService.deleteLinkFather(linkAddress);
                             nodeChildService.createLinkFather(linkAddress, course_mindmap, nodeId);
@@ -212,7 +217,7 @@ public class MindmapController {
                     }
 
                     if (materials.length > 0) {
-                        for (Material m:materials) {
+                        for (Material m : materials) {
                             String materialName = m.getMaterialName();
                             nodeChildService.deleteMaterialFather(materialName);
                             nodeChildService.createMaterialFather(materialName, course_mindmap, nodeId);
@@ -220,7 +225,7 @@ public class MindmapController {
                     }
 
                     if (assignmentMultiples.length > 0) {
-                        for (AssignmentMultiple am:assignmentMultiples) {
+                        for (AssignmentMultiple am : assignmentMultiples) {
                             Long multiId = am.getId();
                             nodeChildService.deleteAssignmentMultiFather(multiId);
                             nodeChildService.createAssignmentMultiFather(multiId, course_mindmap, nodeId);
@@ -228,7 +233,7 @@ public class MindmapController {
                     }
 
                     if (assignmentShorts.length > 0) {
-                        for (AssignmentShort as:assignmentShorts) {
+                        for (AssignmentShort as : assignmentShorts) {
                             Long shortId = as.getId();
                             nodeChildService.deleteAssignmentShortFather(shortId);
                             nodeChildService.createAssignmentShortFather(shortId, course_mindmap, nodeId);
@@ -236,7 +241,7 @@ public class MindmapController {
                     }
 
                     if (assignmentJudgments.length > 0) {
-                        for (AssignmentJudgment aj: assignmentJudgments) {
+                        for (AssignmentJudgment aj : assignmentJudgments) {
                             Long ajId = aj.getId();
                             nodeChildService.deleteAssignmentShortFather(ajId);
                             nodeChildService.createAssignmentShortFather(ajId, course_mindmap, nodeId);
@@ -257,5 +262,44 @@ public class MindmapController {
                 deleteChildren(child);
             }
         }
+    }
+
+    private void changeMindmapNodeToGraphNode(MindmapData currentNode, String parentID, ArrayList<Map<String, Object>> graph) {
+        // MindmapData currentNode = mindmap.getData();
+        // ArrayList<Map<String, Object>> graph = new ArrayList<>();
+
+        String id = currentNode.getId();
+        String name = currentNode.getTopic();
+        int weight = 50;
+        int labelSize = weight / 4;
+        int width = labelSize * name.length() + 60;
+        GraphNode node = new GraphNode(id, name, weight, width, labelSize, parentID);
+
+        Map<String, Object> nodeStructure = new HashMap<>();
+        nodeStructure.put("group", "nodes");
+        nodeStructure.put("data", node);
+        graph.add(nodeStructure);
+
+        if (currentNode.getChildren() == null) {
+            return;
+        }
+
+        for (int i = 0; i < currentNode.getChildren().size(); i++) {
+            MindmapData currentChild = currentNode.getChildren().get(i);
+            changeMindmapNodeToGraphNode(currentChild, currentNode.getId(), graph);
+
+            GraphEdge graphEdge = new GraphEdge(currentNode.getId() + currentChild.getId(), currentNode.getId(), currentChild.getId(), "pre-suc");
+
+            Map<String, Object> edgeStructure = new HashMap<>();
+            edgeStructure.put("group", "edges");
+            edgeStructure.put("data", graphEdge);
+            graph.add(edgeStructure);
+        }
+    }
+
+    private Graph mindmapToGraph(MindmapJson mindmapJson) {
+        ArrayList<Map<String, Object>> graphData = new ArrayList<>();
+        changeMindmapNodeToGraphNode(mindmapJson.getData(), "", graphData);
+        return new Graph(mindmapJson.getMeta(), mindmapJson.getFormat(), graphData);
     }
 }

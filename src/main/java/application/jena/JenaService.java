@@ -40,7 +40,7 @@ public class JenaService {
 
     public static void main(String[] args) {
         JenaService service = new JenaService();
-        List<String> father = service.searchRelationNode("java程序设计", "precursorOf ");
+        List<String> father = service.searchRelationNode("结构化编程", "precursorOf");
         System.out.println(father);
     }
 

@@ -1,7 +1,9 @@
 package application.repository;
 
 import application.model.StudentAnswer;
+import org.springframework.data.neo4j.annotation.Query;
 import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 

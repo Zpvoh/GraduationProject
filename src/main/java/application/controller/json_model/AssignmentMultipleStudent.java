@@ -8,6 +8,8 @@ public class AssignmentMultipleStudent {
     private String optionC;
     private String optionD;
     private String answer;
+    private int score;
+    private int fullScore;
 
     public String getTitle() {
         return title;
@@ -64,5 +66,21 @@ public class AssignmentMultipleStudent {
 
     public void setAssignmentLongId(Long assignmentLongId) {
         this.assignmentLongId = assignmentLongId;
+    }
+
+    public int getScore() {
+        return score;
+    }
+
+    public void setScore(int score) {
+        this.score = score;
+    }
+
+    public int getFullScore() {
+        return fullScore;
+    }
+
+    public void setFullScore(int fullScore) {
+        this.fullScore = fullScore;
     }
 }

@@ -8,6 +8,6 @@ import org.springframework.stereotype.Component;
 
 @Component
 public interface UserTempRepository extends Neo4jRepository<UserTemp, Long> {
-    @Query("MATCH (n:UserTemp) WHERE n.user_name = ({user_name}) RETURN n")
+    @Query("MATCH (n:UserTemp) WHERE n.user_name = ($user_name) RETURN n")
     UserTemp findByUser_name(@Param("user_name") String user_name);
 }

@@ -11,13 +11,13 @@ import java.util.Map;
 @Component
 public interface StudentRepository extends Neo4jRepository<Student, Long> {
 
-    @Query("MATCH (n:Student) WHERE n.name = ({name}) RETURN n")
+    @Query("MATCH (n:Student) WHERE n.name = ($name) RETURN n")
     Student findByName(@Param("name") String name);
 
-    @Query("start student = node({student_id}) match (student)-[:STUDY_IN]->(courses) return courses")
+    @Query("start student = node($student_id) match (student)-[:STUDY_IN]->(courses) return courses")
     Course[] findCourses(@Param("student_id") long student_id);
 
-    @Query("start student = node({student_id}) match (student)-[:WRITE]->(notes) return notes")
+    @Query("start student = node($student_id) match (student)-[:WRITE]->(notes) return notes")
     Note[] findNotes(@Param("student_id") long student_id);
 
     @Query("MATCH (s:Student) - [i:STUDY_IN] -> (c:Course)" +

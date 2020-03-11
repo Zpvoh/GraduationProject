@@ -29,7 +29,7 @@ public class AssignmentController {
 
         List<AssignmentShort_json> short_jsons = new LinkedList<>();
 
-        for (AssignmentShort assignment_short :shorts){
+        for (AssignmentShort assignment_short : shorts) {
             AssignmentShort_json short_json = new AssignmentShort_json();
             short_json.setAssignmentLongId(assignment_short.getId());
             short_json.setTitle(assignment_short.getTitle());
@@ -67,8 +67,8 @@ public class AssignmentController {
 
     // 学生回答简答题
     @RequestMapping(value = "/answer_short/{course_id}/{mindmap_id}/{node_id}/{student_name}", method = RequestMethod.POST)
-    public Success answer_short(@PathVariable String course_id, @PathVariable String mindmap_id, @PathVariable String node_id,@PathVariable String student_name,
-                                   @RequestBody StudentAnswers stu_ans) {
+    public Success answer_short(@PathVariable String course_id, @PathVariable String mindmap_id, @PathVariable String node_id, @PathVariable String student_name,
+                                @RequestBody StudentAnswers stu_ans) {
         Success s = new Success();
         s.setSuccess(false);
 
@@ -76,25 +76,26 @@ public class AssignmentController {
         String shortId = course_id + " " + mindmap_id + " " + node_id;
         List<AssignmentShort> shorts = nodeChildService.findShorts(shortId);
 
-        AssignmentShort short_result=null;
-        for (AssignmentShort  assignmentShort: shorts) {
-            if (assignmentShort.getTitle().equals(stu_ans.getTitle())){
-                short_result =assignmentShort;
+        AssignmentShort short_result = null;
+        for (AssignmentShort assignmentShort : shorts) {
+            if (assignmentShort.getTitle().equals(stu_ans.getTitle())) {
+                short_result = assignmentShort;
                 break;
             }
         }
         StudentAnswer studentAnswer;
         Student student = userService.findStudentByName(student_name);
         //比对答案
-        if(short_result != null){ //找到题目
+        if (short_result != null) { //找到题目
             studentAnswer = nodeChildService.getStudentAns(student.getId(), short_result.getId());
             if (studentAnswer == null) { //该学生之前没有回答过这个问题,需要初始化
                 studentAnswer = new StudentAnswer();
                 studentAnswer.setStudentName(student_name);
                 studentAnswer.setStudentId(student.getId());
-                studentAnswer.setAssignmentId(shortId+short_result.getId());
+                studentAnswer.setAssignmentId(shortId + short_result.getId());
                 studentAnswer.setAssignmentLongId(short_result.getId());
             }
+            studentAnswer.setScore(0);
             studentAnswer.setAnswer(stu_ans.getAnswer());
             nodeChildService.addStudentAnswer(studentAnswer);
             s.setSuccess(true);
@@ -111,10 +112,10 @@ public class AssignmentController {
         String shortId = course_id + " " + mindmap_id + " " + node_id;
         List<AssignmentShort> shorts = nodeChildService.findShorts(shortId);
 
-        AssignmentShort short_result=null;
-        for (AssignmentShort  assignmentShort: shorts) {
-            if (assignmentShort.getTitle().equals(short_title)){
-                short_result =assignmentShort;
+        AssignmentShort short_result = null;
+        for (AssignmentShort assignmentShort : shorts) {
+            if (assignmentShort.getTitle().equals(short_title)) {
+                short_result = assignmentShort;
                 break;
             }
         }
@@ -123,7 +124,7 @@ public class AssignmentController {
 
     // 学生回答选择题
     @RequestMapping(value = "/answer_multiple/{course_id}/{mindmap_id}/{node_id}/{student_name}", method = RequestMethod.POST)
-    public Success answer_multiple(@PathVariable String course_id, @PathVariable String mindmap_id, @PathVariable String node_id,@PathVariable String student_name,
+    public Success answer_multiple(@PathVariable String course_id, @PathVariable String mindmap_id, @PathVariable String node_id, @PathVariable String student_name,
                                    @RequestBody StudentAnswers stu_ans) {
         Success s = new Success();
         s.setSuccess(false);
@@ -132,10 +133,10 @@ public class AssignmentController {
         String multiId = course_id + " " + mindmap_id + " " + node_id;
         List<AssignmentMultiple> multiples = nodeChildService.findMultis(multiId);
 
-        AssignmentMultiple multiple_result=null;
-        for (AssignmentMultiple multiple :multiples) {
-            if (multiple.getTitle().equals(stu_ans.getTitle())){
-                multiple_result =multiple;
+        AssignmentMultiple multiple_result = null;
+        for (AssignmentMultiple multiple : multiples) {
+            if (multiple.getTitle().equals(stu_ans.getTitle())) {
+                multiple_result = multiple;
                 break;
             }
         }
@@ -143,9 +144,9 @@ public class AssignmentController {
         Student student = userService.findStudentByName(student_name);
 
         //比对答案
-        if(multiple_result != null){ //找到题目
+        if (multiple_result != null) { //找到题目
             int number_before = Integer.parseInt(multiple_result.getNumber());
-            int correct_number_before =Integer.parseInt(multiple_result.getCorrect_number());
+            int correct_number_before = Integer.parseInt(multiple_result.getCorrect_number());
 
             studentAnswer = nodeChildService.getStudentAns(student.getId(), multiple_result.getId());
             if (studentAnswer == null) { //该学生之前没有回答过这个问题
@@ -153,24 +154,33 @@ public class AssignmentController {
 
                 studentAnswer.setStudentName(student_name);
                 studentAnswer.setStudentId(student.getId());
-                studentAnswer.setAssignmentId(multiId+multiple_result.getId());
+                studentAnswer.setAssignmentId(multiId + multiple_result.getId());
                 studentAnswer.setAssignmentLongId(multiple_result.getId());
 
                 studentAnswer.setAnswer(stu_ans.getAnswer());
-                nodeChildService.addStudentAnswer(studentAnswer);
-                multiple_result.setNumber((number_before+1)+"");
-                if(multiple_result.getCorrect_answer().equals(stu_ans.getAnswer())){
-                    multiple_result.setCorrect_number(correct_number_before+1+"");
+                if (multiple_result.getCorrect_answer().equals(stu_ans.getAnswer())) {
+                    multiple_result.setCorrect_number(correct_number_before + 1 + "");
+                    //List<AssignmentMultiple> multiple = nodeChildService.findMultis(studentAnswer.getAssignmentId());
+                    studentAnswer.setScore(multiple_result.getValue());
+                } else {
+                    studentAnswer.setScore(0);
                 }
-            }
-            else { //回答过
+                nodeChildService.addStudentAnswer(studentAnswer);
+                multiple_result.setNumber((number_before + 1) + "");
+            } else { //回答过
                 //原先的回答错误，现在的回答正确
                 boolean isOldAnswerTrue = multiple_result.getCorrect_answer().equals(studentAnswer.getAnswer());
                 boolean isNewAnswerTrue = multiple_result.getCorrect_answer().equals(stu_ans.getAnswer());
                 if (!isOldAnswerTrue && isNewAnswerTrue) // 前错后对 +1
-                    multiple_result.setCorrect_number(correct_number_before+1+"");
-                else if (isOldAnswerTrue && !isNewAnswerTrue) //前对后错 -1
-                    multiple_result.setCorrect_number(correct_number_before-1+"");
+                {
+                    multiple_result.setCorrect_number(correct_number_before + 1 + "");
+                    studentAnswer.setScore(multiple_result.getValue());
+
+                } else if (isOldAnswerTrue && !isNewAnswerTrue) //前对后错 -1
+                {
+                    multiple_result.setCorrect_number(correct_number_before - 1 + "");
+                    studentAnswer.setScore(0);
+                }
                 studentAnswer.setAnswer(stu_ans.getAnswer());
                 nodeChildService.addStudentAnswer(studentAnswer);
             }
@@ -184,8 +194,8 @@ public class AssignmentController {
 
     // 学生回答判断题
     @RequestMapping(value = "/answer_judgement/{course_id}/{mindmap_id}/{node_id}/{student_name}", method = RequestMethod.POST)
-    public Success answer_judgement(@PathVariable String course_id, @PathVariable String mindmap_id, @PathVariable String node_id,@PathVariable String student_name,
-                                   @RequestBody StudentAnswers stu_ans) {
+    public Success answer_judgement(@PathVariable String course_id, @PathVariable String mindmap_id, @PathVariable String node_id, @PathVariable String student_name,
+                                    @RequestBody StudentAnswers stu_ans) {
 
         Success s = new Success();
         s.setSuccess(false);
@@ -194,10 +204,10 @@ public class AssignmentController {
         String judgeId = course_id + " " + mindmap_id + " " + node_id;
         List<AssignmentJudgment> judgments = nodeChildService.findJudgements(judgeId);
 
-        AssignmentJudgment judgment_result=null;
-        for (AssignmentJudgment judgment :judgments) {
-            if (judgment.getTitle().equals(stu_ans.getTitle())){
-                judgment_result =judgment;
+        AssignmentJudgment judgment_result = null;
+        for (AssignmentJudgment judgment : judgments) {
+            if (judgment.getTitle().equals(stu_ans.getTitle())) {
+                judgment_result = judgment;
                 break;
             }
         }
@@ -205,9 +215,9 @@ public class AssignmentController {
         Student student = userService.findStudentByName(student_name);
 
         //比对答案
-        if(judgment_result != null){ //找到题目
+        if (judgment_result != null) { //找到题目
             int number_before = Integer.parseInt(judgment_result.getNumber());
-            int correct_number_before =Integer.parseInt(judgment_result.getCorrect_number());
+            int correct_number_before = Integer.parseInt(judgment_result.getCorrect_number());
 
             studentAnswer = nodeChildService.getStudentAns(student.getId(), judgment_result.getId());
             if (studentAnswer == null) { //该学生之前没有回答过这个问题
@@ -215,24 +225,31 @@ public class AssignmentController {
 
                 studentAnswer.setStudentName(student_name);
                 studentAnswer.setStudentId(student.getId());
-                studentAnswer.setAssignmentId(judgeId+judgment_result.getId());
+                studentAnswer.setAssignmentId(judgeId + judgment_result.getId());
                 studentAnswer.setAssignmentLongId(judgment_result.getId());
 
                 studentAnswer.setAnswer(stu_ans.getAnswer());
-                nodeChildService.addStudentAnswer(studentAnswer);
-                judgment_result.setNumber((number_before+1)+"");
-                if(judgment_result.getCorrect_answer().equals(stu_ans.getAnswer())){
-                    judgment_result.setCorrect_number(correct_number_before+1+"");
+                if (judgment_result.getCorrect_answer().equals(stu_ans.getAnswer())) {
+                    judgment_result.setCorrect_number(correct_number_before + 1 + "");
+                    studentAnswer.setScore(judgment_result.getValue());
+                }else{
+                    studentAnswer.setScore(0);
                 }
-            }
-            else { //回答过
+                nodeChildService.addStudentAnswer(studentAnswer);
+                judgment_result.setNumber((number_before + 1) + "");
+
+            } else { //回答过
                 //原先的回答错误，现在的回答正确
                 boolean isOldAnswerTrue = judgment_result.getCorrect_answer().equals(studentAnswer.getAnswer());
                 boolean isNewAnswerTrue = judgment_result.getCorrect_answer().equals(stu_ans.getAnswer());
-                if (!isOldAnswerTrue && isNewAnswerTrue) // 前错后对 +1
-                    judgment_result.setCorrect_number(correct_number_before+1+"");
-                else if (isOldAnswerTrue && !isNewAnswerTrue) //前对后错 -1
-                    judgment_result.setCorrect_number(correct_number_before-1+"");
+                if (!isOldAnswerTrue && isNewAnswerTrue) { // 前错后对 +1
+                    judgment_result.setCorrect_number(correct_number_before + 1 + "");
+                    studentAnswer.setScore(judgment_result.getValue());
+                }
+                else if (isOldAnswerTrue && !isNewAnswerTrue) { //前对后错 -1
+                    judgment_result.setCorrect_number(correct_number_before - 1 + "");
+                    studentAnswer.setScore(0);
+                }
                 studentAnswer.setAnswer(stu_ans.getAnswer());
                 nodeChildService.addStudentAnswer(studentAnswer);
             }
@@ -244,7 +261,7 @@ public class AssignmentController {
         return s;
     }
 
-    // 给学生的简答题列表
+    // 给学生的选择题列表
     @RequestMapping(value = "/multiples_student/{course_id}/{mindmap_id}/{node_id}/{student_name}", method = RequestMethod.GET)
     public List<AssignmentMultipleStudent> multiples_student(@PathVariable String course_id, @PathVariable String mindmap_id,
                                                              @PathVariable String node_id, @PathVariable String student_name) {
@@ -264,13 +281,18 @@ public class AssignmentController {
             multiple_student.setOptionB(multiple.getOptionB());
             multiple_student.setOptionC(multiple.getOptionC());
             multiple_student.setOptionD(multiple.getOptionD());
-            
+            multiple_student.setFullScore(multiple.getValue());
+
             //
             StudentAnswer studentAnswer = nodeChildService.getStudentAns(student.getId(), multiple.getId());
-            if (studentAnswer == null)
+            if (studentAnswer == null) {
                 multiple_student.setAnswer("");
-            else 
+                multiple_student.setScore(0);
+            }
+            else {
                 multiple_student.setAnswer(studentAnswer.getAnswer());
+                multiple_student.setScore(studentAnswer.getScore());
+            }
             multiples_student.add(multiple_student);
 
         }
@@ -294,13 +316,18 @@ public class AssignmentController {
 
             judgment_student.setAssignmentLongId(judgment.getId());
             judgment_student.setTitle(judgment.getTitle());
-            
+            judgment_student.setFullScore(judgment.getValue());
+
             StudentAnswer studentAnswer = nodeChildService.getStudentAns(student.getId(), judgment.getId());
-            if (studentAnswer == null)
+            if (studentAnswer == null) {
                 judgment_student.setAnswer("");
-            else
+                judgment_student.setScore(0);
+            }
+            else {
                 judgment_student.setAnswer(studentAnswer.getAnswer());
-            
+                judgment_student.setScore(studentAnswer.getScore());
+            }
+
             judgments_student.add(judgment_student);
         }
 
@@ -310,7 +337,7 @@ public class AssignmentController {
     // 给学生的简答题列表
     @RequestMapping(value = "/shorts_student/{course_id}/{mindmap_id}/{node_id}/{student_name}", method = RequestMethod.GET)
     public List<AssignmentShortStudent> shorts_student(@PathVariable String course_id, @PathVariable String mindmap_id,
-                                                             @PathVariable String node_id, @PathVariable String student_name) {
+                                                       @PathVariable String node_id, @PathVariable String student_name) {
 
         String shortId = course_id + " " + mindmap_id + " " + node_id;
         List<AssignmentShort> shorts = nodeChildService.findShorts(shortId);
@@ -323,12 +350,17 @@ public class AssignmentController {
 
             short_student.setAssignmentLongId(aShort.getId());
             short_student.setTitle(aShort.getTitle());
+            short_student.setFullScore(10);
 
             StudentAnswer studentAnswer = nodeChildService.getStudentAns(student.getId(), aShort.getId());
-            if (studentAnswer == null)
+            if (studentAnswer == null) {
                 short_student.setAnswer("");
-            else
+                short_student.setScore(0);
+            }
+            else {
                 short_student.setAnswer(studentAnswer.getAnswer());
+                short_student.setScore(studentAnswer.getScore());
+            }
 
             shorts_student.add(short_student);
         }
@@ -341,11 +373,11 @@ public class AssignmentController {
     public List<AssignmentMultiple_json> multiples_teacher(@PathVariable String course_id, @PathVariable String mindmap_id,
                                                            @PathVariable String node_id) {
 
-        String multiId =course_id + " " + mindmap_id + " " + node_id;
+        String multiId = course_id + " " + mindmap_id + " " + node_id;
         List<AssignmentMultiple> multiples = nodeChildService.findMultis(multiId);
 
         List<AssignmentMultiple_json> multiple_jsons = new LinkedList<>();
-        for (AssignmentMultiple multiple :multiples){
+        for (AssignmentMultiple multiple : multiples) {
             AssignmentMultiple_json multiple_json = new AssignmentMultiple_json();
 
             multiple_json.setTitle(multiple.getTitle());
@@ -368,11 +400,11 @@ public class AssignmentController {
     public List<AssignmentJudgment_json> judgments_teacher(@PathVariable String course_id, @PathVariable String mindmap_id,
                                                            @PathVariable String node_id) {
 
-        String judgeId =course_id + " " + mindmap_id + " " + node_id;
+        String judgeId = course_id + " " + mindmap_id + " " + node_id;
         List<AssignmentJudgment> judgments = nodeChildService.findJudgements(judgeId);
 
         List<AssignmentJudgment_json> judgment_jsons = new LinkedList<>();
-        for (AssignmentJudgment judgment :judgments){
+        for (AssignmentJudgment judgment : judgments) {
             AssignmentJudgment_json judgment_json = new AssignmentJudgment_json();
 
             judgment_json.setTitle(judgment.getTitle());
@@ -455,7 +487,7 @@ public class AssignmentController {
         //向node节点添加HAS_ASSIGNMENT_MULTI关系
         if (result_node != null) {
             //向节点里增加multi_id number correct_number值
-            assignmentShort.setShort_id(course_id+" "+mindmap_id+" "+node_id);
+            assignmentShort.setShort_id(course_id + " " + mindmap_id + " " + node_id);
 
             //增加节点
             nodeChildService.saveShort(assignmentShort);
@@ -463,6 +495,22 @@ public class AssignmentController {
             //建立关系
             result_node.setAssignmentShorts(assignmentShort);
             nodeService.save(result_node);
+            success.setSuccess(true);
+
+        }
+        return success;
+    }
+
+    // 批改简答题
+    @RequestMapping(value="/correct_short/{assignment_long_id}/{student_id}", method = RequestMethod.POST)
+    public Success correct_short(@PathVariable long student_id, @PathVariable long assignment_long_id, @RequestBody int score){
+        Success success = new Success();
+        success.setSuccess(false);
+
+        StudentAnswer studentAnswer=nodeChildService.getStudentAns(student_id, assignment_long_id);
+        if (studentAnswer != null) {
+            //更改分数 批改
+            nodeChildService.setAssignmentShortScore(assignment_long_id, student_id, score);
             success.setSuccess(true);
 
         }
@@ -494,7 +542,6 @@ public class AssignmentController {
 //    public void updateNetwork() {
 //        nodeService.updateNetwork();
 //    }
-
 
 
     @RequestMapping(value = "/getAllAssignmentShorts", method = RequestMethod.GET)

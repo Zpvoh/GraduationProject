@@ -14,6 +14,7 @@ public class StudentAnswer {
     private long assignmentLongId;
     private long studentId;
     private String answer;
+    private int score;
 
     public String getAnswer() {
         return answer;
@@ -61,5 +62,13 @@ public class StudentAnswer {
 
     public void setStudentId(long studentId) {
         this.studentId = studentId;
+    }
+
+    public int getScore() {
+        return score;
+    }
+
+    public void setScore(int score) {
+        this.score = score;
     }
 }
