@@ -1,40 +1,72 @@
 package application.model;
 
-import java.util.ArrayList;
-import java.util.Map;
+import org.neo4j.ogm.annotation.GeneratedValue;
+import org.neo4j.ogm.annotation.Id;
+import org.neo4j.ogm.annotation.NodeEntity;
+import org.neo4j.ogm.annotation.Relationship;
 
+import java.util.Set;
+
+@NodeEntity(label = "Graph")
 public class Graph {
-    private Map<String, String> meta;
-    private String format;
-    private ArrayList<Map<String, Object>> jsonData;
+    @Id
+    @GeneratedValue
+    private Long id;
 
-    public Graph(Map<String, String> meta, String format, ArrayList<Map<String, Object>> jsonData) {
-        this.meta = meta;
-        this.format = format;
-        this.jsonData = jsonData;
+    private String graph_name;
+    private String graph_id;
+    private String json_string;
+
+    @Relationship(type = "HAS_NODE")
+    private Set<GraphNode> graphNodes;
+
+    private Set<ReferRelationship> references;
+
+    public Long getId() {
+        return id;
     }
 
-    public Map<String, String> getMeta() {
-        return meta;
+    public void setId(Long id) {
+        this.id = id;
     }
 
-    public void setMeta(Map<String, String> meta) {
-        this.meta = meta;
+    public String getGraph_name() {
+        return graph_name;
     }
 
-    public String getFormat() {
-        return format;
+    public void setGraph_name(String graph_name) {
+        this.graph_name = graph_name;
     }
 
-    public void setFormat(String format) {
-        this.format = format;
+    public String getGraph_id() {
+        return graph_id;
     }
 
-    public ArrayList<Map<String, Object>> getJsonData() {
-        return jsonData;
+    public void setGraph_id(String graph_id) {
+        this.graph_id = graph_id;
     }
 
-    public void setJsonData(ArrayList<Map<String, Object>> jsonData) {
-        this.jsonData = jsonData;
+    public String getJson_string() {
+        return json_string;
+    }
+
+    public void setJson_string(String json_string) {
+        this.json_string = json_string;
+    }
+
+    public Set<GraphNode> getGraphNodes() {
+        return graphNodes;
+    }
+
+    public void setGraphNodes(Set<GraphNode> graphNodes) {
+        this.graphNodes = graphNodes;
+    }
+
+    public Set<ReferRelationship> getReferences() {
+        return references;
+    }
+
+    public void setReferences(Set<ReferRelationship> references) {
+        this.references = references;
     }
 }

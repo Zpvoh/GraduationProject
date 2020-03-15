@@ -1,4 +1,4 @@
-package application.model;
+package application.controller.json_model;
 
 import java.util.ArrayList;
 

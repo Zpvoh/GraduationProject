@@ -1,6 +1,5 @@
-package application.model;
+package application.controller.json_model;
 
-import java.util.ArrayList;
 import java.util.Map;
 
 public class MindmapJson {

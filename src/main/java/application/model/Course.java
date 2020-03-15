@@ -18,6 +18,9 @@ public class Course {
     @Relationship(type = "OWN")
     private Set<Mindmap> mindmaps;
 
+    @Relationship(type = "OWN")
+    private Set<Graph> graphs;
+
     public Set<Mindmap> getMindmaps() {
         return mindmaps;
     }
@@ -27,6 +30,13 @@ public class Course {
             mindmaps = new HashSet<>();
         }
         mindmaps.add(mindmap);
+    }
+
+    public void owns(Graph graph) {
+        if (graphs == null) {
+            graphs = new HashSet<>();
+        }
+        graphs.add(graph);
     }
 
     public Long getId() {
@@ -67,5 +77,13 @@ public class Course {
 
     public void setSelectCode(String selectCode) {
         this.selectCode = selectCode;
+    }
+
+    public Set<Graph> getGraphs() {
+        return graphs;
+    }
+
+    public void setGraphs(Set<Graph> graphs) {
+        this.graphs = graphs;
     }
 }

@@ -5,13 +5,11 @@ import com.google.gson.Gson;
 import application.controller.json_model.*;
 import application.model.*;
 import application.service.*;
+import com.google.gson.internal.LinkedTreeMap;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @RestController
 @CrossOrigin
@@ -20,6 +18,8 @@ public class MindmapController {
     private CourseService courseService;
     @Autowired
     private MindmapService mindmapService;
+    @Autowired
+    private GraphService graphService;
     @Autowired
     private NodeService nodeService;
     @Autowired
@@ -50,8 +50,8 @@ public class MindmapController {
         if (result_mindmap != null) {
             json = result_mindmap.getJson_string();
             MindmapJson mindmapJson = gson.fromJson(json, MindmapJson.class);
-            Graph graph = mindmapToGraph(mindmapJson);
-            json = gson.toJson(graph);
+            Graph_json graphJson = mindmapToGraph(mindmapJson);
+            json = gson.toJson(graphJson);
         }
         return json;
     }
@@ -76,6 +76,114 @@ public class MindmapController {
         }
 
         return mindmapList;
+    }
+
+    @RequestMapping(value = "/save_graph/{course_id}/{graph_id}", method = RequestMethod.POST)
+    public Success save_graph(@PathVariable String course_id, @PathVariable String graph_id, @RequestBody String json_string) {
+        this.course_id = course_id;
+        this.mindmap_id = graph_id;
+
+        Success success = new Success();
+        success.setSuccess(false);
+
+        //获得课程
+        Course course = courseService.findByCourseId(course_id);
+        if (course == null) {
+            return success;
+        }
+
+        // 需要判断该mindmap是否已经存在
+        // 若存在，则做修改，否则新建
+        boolean if_exist = false;
+        Graph tempGraph = graphService.findByGraphId(graph_id);
+        if (tempGraph != null)
+            if_exist = true;
+
+        Graph_json graph_json = gson.fromJson(json_string, Graph_json.class);
+
+        String graph_name = graph_json.getMeta().get("name");
+
+//        Node root_node = mindmap_json.getData();
+
+
+        Graph graph = new Graph();
+        graph.setGraph_id(graph_id);
+        graph.setGraph_name(graph_name);
+
+        Map<String, GraphNode> nodes = new HashMap<>();
+        Set<ReferRelationship> references = new HashSet<>();
+        ArrayList<Map<String, Object>> graphDatas = graph_json.getJsonData();
+        for (int i = 0; i < graphDatas.size(); i++) {
+            if (graphDatas.get(i).get("group").equals("nodes")) {
+//                GraphNode_json node = (GraphNode_json) graphDatas.get(i).get("data");
+                LinkedTreeMap<String, Object> node = (LinkedTreeMap)graphDatas.get(i).get("data");
+                double weight = (Double)node.get("weight");
+                GraphNode graphNode = new GraphNode((String)node.get("id"), (String)node.get("name"), (int)Math.round(weight));
+                nodes.put((String)node.get("id"), graphNode);
+            }
+        }
+
+        for (int i = 0; i < graphDatas.size(); i++) {
+            if (graphDatas.get(i).get("group").equals("edges")) {
+                LinkedTreeMap<String, String> edge = (LinkedTreeMap) graphDatas.get(i).get("data");
+                GraphNode source = nodes.get(edge.get("source"));
+                GraphNode target = nodes.get(edge.get("target"));
+                switch (edge.get("type")) {
+                    case "ref":
+                        ReferRelationship referRelationship = new ReferRelationship();
+                        referRelationship.setName(edge.get("name"));
+                        referRelationship.setSource(source);
+                        referRelationship.setTarget(target);
+                        references.add(referRelationship);
+                        break;
+                    case "pre-suc":
+                        source.getSuccessors().add(target);
+                        break;
+                    case "synonym":
+                        source.getSynonyms().add(target);
+                        break;
+                    case "antonym":
+                        source.getAntonyms().add(target);
+                        break;
+                }
+            }
+        }
+
+        HashSet<GraphNode> nodeHashSet = new HashSet<>(nodes.values());
+        graph.setGraphNodes(nodeHashSet);
+        graph.setReferences(references);
+
+        //向每个node添加course_mindmap属性
+        //并且对于已存在的node 将所有和次node有关系的节点都全都链接到新节点上
+//        root_node.setCourse_mindmap(course_id + " " + mindmap_id);
+//        root_node = recurseForNode(root_node);
+//
+//        //存下node_root，其余node会自动生成
+//        nodeService.save(root_node);
+
+        //保存mindmap
+//        Mindmap mindmap = new Mindmap();
+//        mindmap.setJson_string(json_string);
+//        mindmap.setMindmap_id(mindmap_id);
+//        mindmap.setMindmap_name(mindmap_name);
+
+        //保存两者关系
+//        mindmap.setRootNode(root_node);
+        graphService.save(graph);
+//
+        course.owns(graph);
+        courseService.save(course);
+
+        // 若已存在，则删除原先的graph
+//        if (if_exist) {
+//            Node tempRootNode = mindmapService.findRootNode(tempGraph.getId());
+//            deleteChildren(tempRootNode);
+//            nodeService.delete(tempRootNode);
+//            mindmapService.delete(tempGraph);
+//        }
+
+        success.setSuccess(true);
+        return success;
     }
 
     @RequestMapping(value = "/save_mindmap/{course_id}/{mindmap_id}", method = RequestMethod.POST)
@@ -273,7 +381,7 @@ public class MindmapController {
         int weight = 50;
         int labelSize = weight / 4;
         int width = labelSize * name.length() + 60;
-        GraphNode node = new GraphNode(id, name, weight, width, labelSize, parentID);
+        GraphNode_json node = new GraphNode_json(id, name, weight, width, labelSize, parentID);
 
         Map<String, Object> nodeStructure = new HashMap<>();
         nodeStructure.put("group", "nodes");
@@ -288,7 +396,7 @@ public class MindmapController {
             MindmapData currentChild = currentNode.getChildren().get(i);
             changeMindmapNodeToGraphNode(currentChild, currentNode.getId(), graph);
 
-            GraphEdge graphEdge = new GraphEdge(currentNode.getId() + currentChild.getId(), currentNode.getId(), currentChild.getId(), "pre-suc");
+            GraphEdge graphEdge = new GraphEdge(currentNode.getId() + currentChild.getId(), currentNode.getId(), currentChild.getId(), "pre-suc", 10, "前序知识");
 
             Map<String, Object> edgeStructure = new HashMap<>();
             edgeStructure.put("group", "edges");
@@ -297,9 +405,9 @@ public class MindmapController {
         }
     }
 
-    private Graph mindmapToGraph(MindmapJson mindmapJson) {
+    private Graph_json mindmapToGraph(MindmapJson mindmapJson) {
         ArrayList<Map<String, Object>> graphData = new ArrayList<>();
         changeMindmapNodeToGraphNode(mindmapJson.getData(), "", graphData);
-        return new Graph(mindmapJson.getMeta(), mindmapJson.getFormat(), graphData);
+        return new Graph_json(mindmapJson.getMeta(), mindmapJson.getFormat(), graphData);
     }
 }

@@ -1,16 +1,21 @@
-package application.model;
+package application.controller.json_model;
 
-public class GraphEdge {
-    private String id;
+public class GraphEdge extends GraphElement{
     private String source;
     private String target;
     private String type;
+    private int weight;
 
-    public GraphEdge(String id, String source, String target, String type) {
+    public GraphEdge() {
+    }
+
+    public GraphEdge(String id, String source, String target, String type, int weight, String name) {
         this.id = id;
         this.source = source;
         this.target = target;
         this.type = type;
+        this.weight = weight;
+        this.name = name;
     }
 
     public String getId() {
@@ -43,5 +48,21 @@ public class GraphEdge {
 
     public void setType(String type) {
         this.type = type;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public int getWeight() {
+        return weight;
+    }
+
+    public void setWeight(int weight) {
+        this.weight = weight;
     }
 }
