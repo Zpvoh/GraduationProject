@@ -23,4 +23,10 @@ public interface MindmapRepository extends Neo4jRepository<Mindmap, Long> {
 
     @Query("match (m:Mindmap) where m.mindmap_name = {0} return m")
     Mindmap findByMindmap_name(String mindmap_name);
+
+    @Query("Match (m:Mindmap) RETURN m")
+    Mindmap[] findAllMindMap();
+
+    @Query("MATCH (c:Course)-[r:OWN]-(n:Mindmap) WHERE n.mindmap_id={0} RETURN c")
+    Course findCourseOfMindmap(String mindmap_id);
 }

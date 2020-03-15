@@ -38,6 +38,7 @@ public class MindmapController {
         //先找到mindmap
         Course course = courseService.findByCourseId(course_id);
         Mindmap[] mindmaps_course = courseService.findMindmaps(course.getId());
+//        Graph[] graphs_course =courseService.findGraphs(course.getId());
 
         Mindmap result_mindmap = null;
         for (Mindmap mindmap : mindmaps_course) {
@@ -52,6 +53,28 @@ public class MindmapController {
             MindmapJson mindmapJson = gson.fromJson(json, MindmapJson.class);
             Graph_json graphJson = mindmapToGraph(mindmapJson);
             json = gson.toJson(graphJson);
+        }
+        return json;
+    }
+
+    @RequestMapping(value = "/graph/{course_id}/{graph_id}", method = RequestMethod.GET)
+    public String graph(@PathVariable String course_id, @PathVariable String graph_id) {
+        String json = null;
+        //先找到graph
+        Course course = courseService.findByCourseId(course_id);
+//        Mindmap[] mindmaps_course = courseService.findMindmaps(course.getId());
+        Graph[] graphs_course =courseService.findGraphs(course.getId());
+
+        Graph result_graph = null;
+        for (Graph graph : graphs_course) {
+            if (graph.getGraph_id().equals(graph_id)) {
+                result_graph = graph;
+                break;
+            }
+        }
+
+        if (result_graph != null) {
+            json = result_graph.getJson_string();
         }
         return json;
     }
@@ -73,6 +96,28 @@ public class MindmapController {
             mindmapList[i] = new MindmapIdName();
             mindmapList[i].setId(mindmaps[i].getMindmap_id());
             mindmapList[i].setName(mindmaps[i].getMindmap_name());
+        }
+
+        return mindmapList;
+    }
+
+    @RequestMapping(value = "/graph_id_list/{course_id}", method = RequestMethod.GET)
+    public MindmapIdName[] graph_id_list(@PathVariable String course_id) {
+        //先找到course
+        Course course = courseService.findByCourseId(course_id);
+
+        if (course == null)
+            return null;
+
+        //找OWN关系
+        Graph[] graphs = courseService.findGraphs(course.getId());
+
+        MindmapIdName[] mindmapList = new MindmapIdName[graphs.length];
+
+        for (int i = 0; i < graphs.length; i++) {
+            mindmapList[i] = new MindmapIdName();
+            mindmapList[i].setId(graphs[i].getGraph_id());
+            mindmapList[i].setName(graphs[i].getGraph_name());
         }
 
         return mindmapList;
@@ -116,10 +161,10 @@ public class MindmapController {
         for (int i = 0; i < graphDatas.size(); i++) {
             if (graphDatas.get(i).get("group").equals("nodes")) {
 //                GraphNode_json node = (GraphNode_json) graphDatas.get(i).get("data");
-                LinkedTreeMap<String, Object> node = (LinkedTreeMap)graphDatas.get(i).get("data");
-                double weight = (Double)node.get("weight");
-                GraphNode graphNode = new GraphNode((String)node.get("id"), (String)node.get("name"), (int)Math.round(weight));
-                nodes.put((String)node.get("id"), graphNode);
+                LinkedTreeMap<String, Object> node = (LinkedTreeMap) graphDatas.get(i).get("data");
+                double weight = (Double) node.get("weight");
+                GraphNode graphNode = new GraphNode((String) node.get("id"), (String) node.get("name"), (int) Math.round(weight));
+                nodes.put((String) node.get("id"), graphNode);
             }
         }
 
@@ -151,36 +196,16 @@ public class MindmapController {
 
         HashSet<GraphNode> nodeHashSet = new HashSet<>(nodes.values());
         graph.setGraphNodes(nodeHashSet);
-        graph.setReferences(references);
+        graphService.saveReferences(references);
 
-        //向每个node添加course_mindmap属性
-        //并且对于已存在的node 将所有和次node有关系的节点都全都链接到新节点上
-//        root_node.setCourse_mindmap(course_id + " " + mindmap_id);
-//        root_node = recurseForNode(root_node);
-//
-//        //存下node_root，其余node会自动生成
-//        nodeService.save(root_node);
-
-        //保存mindmap
-//        Mindmap mindmap = new Mindmap();
-//        mindmap.setJson_string(json_string);
-//        mindmap.setMindmap_id(mindmap_id);
-//        mindmap.setMindmap_name(mindmap_name);
-
-        //保存两者关系
-//        mindmap.setRootNode(root_node);
+        graph.setJson_string(json_string);
+        // 若已存在，则删除原先的graph
+        if (if_exist) {
+            graphService.deleteGraphById(graph_id);
+        }
         graphService.save(graph);
-//
         course.owns(graph);
         courseService.save(course);
-
-        // 若已存在，则删除原先的graph
-//        if (if_exist) {
-//            Node tempRootNode = mindmapService.findRootNode(tempGraph.getId());
-//            deleteChildren(tempRootNode);
-//            nodeService.delete(tempRootNode);
-//            mindmapService.delete(tempGraph);
-//        }
 
         success.setSuccess(true);
         return success;
@@ -409,5 +434,105 @@ public class MindmapController {
         ArrayList<Map<String, Object>> graphData = new ArrayList<>();
         changeMindmapNodeToGraphNode(mindmapJson.getData(), "", graphData);
         return new Graph_json(mindmapJson.getMeta(), mindmapJson.getFormat(), graphData);
+    }
+
+    @RequestMapping(value = "/mindmap_move", method = RequestMethod.GET)
+    public String moveMindmapToGraph() {
+        Mindmap[] allMindmaps = mindmapService.findAllMindmap();
+        for (int i = 0; i < allMindmaps.length; i++) {
+            Mindmap currentMindmap = allMindmaps[i];
+            Node rootNode = mindmapService.findRootNode(currentMindmap.getId());
+            Graph graph = new Graph();
+            graph.setGraph_id(currentMindmap.getMindmap_id());
+            graph.setGraph_name(currentMindmap.getMindmap_name());
+
+            String json = currentMindmap.getJson_string();
+            MindmapJson mindmapJson = gson.fromJson(json, MindmapJson.class);
+            Graph_json graphJson = mindmapToGraph(mindmapJson);
+            json = gson.toJson(graphJson);
+            graph.setJson_string(json);
+
+            System.out.println(currentMindmap.getMindmap_name());
+            rootNodeToGraph(rootNode, graph);
+            graphService.save(graph);
+
+            Course course = mindmapService.findCourseOfMindmap(currentMindmap.getMindmap_id());
+            course.owns(graph);
+            courseService.save(course);
+        }
+
+        return "OK";
+    }
+
+    private GraphNode rootNodeToGraph(Node rootNode, Graph graph) {
+        List<Node> children= new ArrayList<>();
+        Node[] children_arr = nodeService.findChildren(rootNode.getLong_id());
+        if (children_arr!=null) {
+            Collections.addAll(children, children_arr);
+            rootNode.setChildren(children);
+        }
+
+        Set<Material> materials = new HashSet<>();
+        Material[] materials_arr = nodeService.findMaterials(rootNode.getLong_id());
+        if(materials_arr != null) {
+            Collections.addAll(materials, materials_arr);
+            rootNode.setMaterials(materials);
+        }
+
+        Set<Courseware> coursewares = new HashSet<>();
+        Courseware[] coursewares_arr = nodeService.findCoursewares(rootNode.getLong_id());
+        if(coursewares_arr!=null) {
+            Collections.addAll(coursewares, coursewares_arr);
+            rootNode.setCoursewares(coursewares);
+        }
+
+        Set<Link> links = new HashSet<>();
+        Link[] links_arr = nodeService.findLinks(rootNode.getLong_id());
+        if(links_arr!=null) {
+            Collections.addAll(links, links_arr);
+            rootNode.setLinks(links);
+        }
+
+        Set<Note> notes = new HashSet<>();
+        Note[] notes_arr = nodeService.getNotes(rootNode.getLong_id());
+        if(notes_arr!=null) {
+            Collections.addAll(notes, notes_arr);
+            rootNode.setNotes(notes);
+        }
+
+        Set<AssignmentMultiple> assignmentMultiples = new HashSet<>();
+        AssignmentMultiple[] assignmentMultiples_arr = nodeService.findAssignmentMultiple(rootNode.getLong_id());
+        if(assignmentMultiples_arr!=null) {
+            Collections.addAll(assignmentMultiples, assignmentMultiples_arr);
+            rootNode.setAssignmentMultiples(assignmentMultiples);
+        }
+
+        Set<AssignmentJudgment> assignmentJudgments = new HashSet<>();
+        AssignmentJudgment[] assignmentJudgments_arr = nodeService.findAssignmentJudgements(rootNode.getLong_id());
+        if(assignmentJudgments_arr!=null) {
+            Collections.addAll(assignmentJudgments, assignmentJudgments_arr);
+            rootNode.setAssignmentJudgments(assignmentJudgments);
+        }
+
+        Set<AssignmentShort> assignmentShorts = new HashSet<>();
+        AssignmentShort[] assignmentShorts_arr = nodeService.findAssignmentShort(rootNode.getLong_id());
+        if(assignmentShorts_arr!=null) {
+            Collections.addAll(assignmentShorts, assignmentShorts_arr);
+            rootNode.setAssignmentShorts(assignmentShorts);
+        }
+
+        GraphNode graphNode = new GraphNode(rootNode.getId(), rootNode.getTopic(), 50,
+                rootNode.getMaterials(), rootNode.getCoursewares(), rootNode.getLinks(), rootNode.getAssignmentMultiples(),
+                rootNode.getAssignmentJudgments(), rootNode.getAssignmentShorts(), rootNode.getNotes());
+        graph.getGraphNodes().add(graphNode);
+
+        if(children_arr!=null) {
+            for (int i = 0; i < children.size(); i++) {
+                Node child = children.get(i);
+                graphNode.getSuccessors().add(rootNodeToGraph(child, graph));
+            }
+        }
+
+        return graphNode;
     }
 }

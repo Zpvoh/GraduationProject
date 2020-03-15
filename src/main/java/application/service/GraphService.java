@@ -30,6 +30,10 @@ public class GraphService {
         return graphRepository.findByGraph_id(id);
     }
 
+    public void deleteGraphById(String id) {
+        graphRepository.deleteGraphByGraph_id(id);
+    }
+
     public void save(Graph graph) {
         graphRepository.save(graph);
     }

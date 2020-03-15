@@ -9,12 +9,31 @@ import java.util.Set;
 @NodeEntity(label = "GraphNode")
 public class GraphNode {
     public GraphNode() {
+        this.successors = new HashSet<>();
+        this.synonyms = new HashSet<>();
+        this.antonyms = new HashSet<>();
     }
 
     public GraphNode(String id, String name, int weight) {
         this.id = id;
         this.name = name;
         this.weight = weight;
+        this.successors = new HashSet<>();
+        this.synonyms = new HashSet<>();
+        this.antonyms = new HashSet<>();
+    }
+
+    public GraphNode(String id, String name, int weight, Set<Material> materials, Set<Courseware> coursewares, Set<Link> links, Set<AssignmentMultiple> assignmentMultiples, Set<AssignmentJudgment> assignmentJudgments, Set<AssignmentShort> assignmentShorts, Set<Note> notes) {
+        this.id = id;
+        this.name = name;
+        this.weight = weight;
+        this.materials = materials;
+        this.coursewares = coursewares;
+        this.links = links;
+        this.assignmentMultiples = assignmentMultiples;
+        this.assignmentJudgments = assignmentJudgments;
+        this.assignmentShorts = assignmentShorts;
+        this.notes = notes;
         this.successors = new HashSet<>();
         this.synonyms = new HashSet<>();
         this.antonyms = new HashSet<>();

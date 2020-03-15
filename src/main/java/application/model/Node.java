@@ -196,4 +196,27 @@ public class Node {
     }
 
 
+    public void setMaterials(Set<Material> materials) {
+        this.materials = materials;
+    }
+
+    public void setCoursewares(Set<Courseware> coursewares) {
+        this.coursewares = coursewares;
+    }
+
+    public void setLinks(Set<Link> links) {
+        this.links = links;
+    }
+
+    public void setAssignmentMultiples(Set<AssignmentMultiple> assignmentMultiples) {
+        this.assignmentMultiples = assignmentMultiples;
+    }
+
+    public void setAssignmentJudgments(Set<AssignmentJudgment> assignmentJudgments) {
+        this.assignmentJudgments = assignmentJudgments;
+    }
+
+    public void setAssignmentShorts(Set<AssignmentShort> assignmentShorts) {
+        this.assignmentShorts = assignmentShorts;
+    }
 }

@@ -5,10 +5,15 @@ import org.neo4j.ogm.annotation.Id;
 import org.neo4j.ogm.annotation.NodeEntity;
 import org.neo4j.ogm.annotation.Relationship;
 
+import java.util.HashSet;
 import java.util.Set;
 
 @NodeEntity(label = "Graph")
 public class Graph {
+    public Graph() {
+        this.graphNodes=new HashSet<>();
+    }
+
     @Id
     @GeneratedValue
     private Long id;
@@ -19,8 +24,6 @@ public class Graph {
 
     @Relationship(type = "HAS_NODE")
     private Set<GraphNode> graphNodes;
-
-    private Set<ReferRelationship> references;
 
     public Long getId() {
         return id;
@@ -60,13 +63,5 @@ public class Graph {
 
     public void setGraphNodes(Set<GraphNode> graphNodes) {
         this.graphNodes = graphNodes;
-    }
-
-    public Set<ReferRelationship> getReferences() {
-        return references;
-    }
-
-    public void setReferences(Set<ReferRelationship> references) {
-        this.references = references;
     }
 }

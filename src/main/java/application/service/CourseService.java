@@ -214,6 +214,8 @@ public class CourseService {
         return courseRepository.findMindmaps(id);
     }
 
+    public Graph[] findGraphs(long id) {return courseRepository.findGraphs(id);}
+
     public void save(Course course) {
         courseRepository.save(course);
     }

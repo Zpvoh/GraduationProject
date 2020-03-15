@@ -117,4 +117,12 @@ public class MindmapService {
 
         return nodeCountList;
     }
+
+    public Mindmap[] findAllMindmap() {
+        return mindmapRepository.findAllMindMap();
+    }
+
+    public Course findCourseOfMindmap(String mindmap_id){
+        return mindmapRepository.findCourseOfMindmap(mindmap_id);
+    }
 }
