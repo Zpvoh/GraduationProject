@@ -3,15 +3,16 @@ package application.service;
 import application.controller.json_model.NodeValue;
 import application.model.*;
 import application.repository.*;
+import application.strategies.evaluation.ScoreList;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
 
 @Service
-public class NodeService {
+public class GraphNodeService {
     @Autowired
-    private NodeRepository nodeRepository;
+    private GraphNodeRepository nodeRepository;
     @Autowired
     private AssignmentJudgmentRepository assignmentJudgmentRepository;
     @Autowired
@@ -19,8 +20,8 @@ public class NodeService {
     @Autowired
     private AssignmentShortRepository assignmentShortRepository;
 
-    public Node findByNodeId(String course_mindmap, String nodeId) {
-        return nodeRepository.findByNodeId(course_mindmap, nodeId);
+    public GraphNode findByNodeId(String course_id, String mindmap_id, String nodeId) {
+        return nodeRepository.findByNodeId(course_id, mindmap_id, nodeId);
     }
 
     public Courseware[] findCoursewares(long id) {
@@ -47,15 +48,15 @@ public class NodeService {
         return nodeRepository.findAssignmentShort(id);
     }
 
-    public void delete(Node node) {
+    public void delete(GraphNode node) {
         nodeRepository.delete(node);
     }
 
-    public void save(Node node) {
+    public void save(GraphNode node) {
         nodeRepository.save(node);
     }
 
-    public Node[] findChildren(long id ){
+    public GraphNode[] findChildren(long id ){
         return nodeRepository.findChildren(id);
     }
 
@@ -63,7 +64,7 @@ public class NodeService {
         return nodeRepository.findNotes(id);
     }
 
-    public Node getNodeByLongId(long id) {
+    public GraphNode getNodeByLongId(long id) {
         return nodeRepository.findByNodeLongId(id);
     }
 

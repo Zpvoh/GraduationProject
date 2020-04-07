@@ -13,7 +13,7 @@ import java.util.List;
 @CrossOrigin
 public class AssignmentController {
     @Autowired
-    private NodeService nodeService;
+    private GraphNodeService graphNodeService;
     @Autowired
     private NodeChildService nodeChildService;
     @Autowired
@@ -426,7 +426,7 @@ public class AssignmentController {
         success.setSuccess(false);
 
         //找到node
-        Node result_node = nodeService.findByNodeId(course_id + " " + mindmap_id, node_id);
+        GraphNode result_node = graphNodeService.findByNodeId(course_id, mindmap_id, node_id);
 
         //向node节点添加HAS_ASSIGNMENT_MULTI关系
         if (result_node != null) {
@@ -440,7 +440,7 @@ public class AssignmentController {
             nodeChildService.saveMulti(multiple);
             //建立关系
             result_node.setAssignmentMultiple(multiple);
-            nodeService.save(result_node);
+            graphNodeService.save(result_node);
             success.setSuccess(true);
         }
         return success;
@@ -454,7 +454,7 @@ public class AssignmentController {
         success.setSuccess(false);
 
         //找到node
-        Node result_node = nodeService.findByNodeId(course_id + " " + mindmap_id, node_id);
+        GraphNode result_node = graphNodeService.findByNodeId(course_id, mindmap_id, node_id);
 
         //向node节点添加HAS_ASSIGNMENT_JUDGe关系
         if (result_node != null) {
@@ -468,7 +468,7 @@ public class AssignmentController {
             nodeChildService.saveJudge(judgment);
             //建立关系
             result_node.setAssignmentJudgments(judgment);
-            nodeService.save(result_node);
+            graphNodeService.save(result_node);
             success.setSuccess(true);
         }
         return success;
@@ -482,7 +482,7 @@ public class AssignmentController {
         success.setSuccess(false);
 
         //找到node
-        Node result_node = nodeService.findByNodeId(course_id + " " + mindmap_id, node_id);
+        GraphNode result_node = graphNodeService.findByNodeId(course_id, mindmap_id, node_id);
 
         //向node节点添加HAS_ASSIGNMENT_MULTI关系
         if (result_node != null) {
@@ -494,7 +494,7 @@ public class AssignmentController {
 
             //建立关系
             result_node.setAssignmentShorts(assignmentShort);
-            nodeService.save(result_node);
+            graphNodeService.save(result_node);
             success.setSuccess(true);
 
         }

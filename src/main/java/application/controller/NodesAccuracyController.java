@@ -2,12 +2,10 @@ package application.controller;
 
 import application.controller.json_model.NodeValue;
 import application.controller.json_model.NodesAccuracy;
-import application.model.*;
 import application.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import java.text.DecimalFormat;
 import java.util.*;
 
 @RestController
@@ -16,7 +14,7 @@ public class NodesAccuracyController {
     @Autowired
     private MindmapService mindmapService;
     @Autowired
-    private NodeService nodeService;
+    private GraphNodeService graphNodeService;
     @Autowired
     private NodeChildService nodeChildService;
 

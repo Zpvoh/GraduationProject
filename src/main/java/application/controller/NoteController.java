@@ -15,7 +15,7 @@ import java.util.List;
 public class NoteController {
 
     @Autowired
-    private NodeService nodeService;
+    private GraphNodeService graphNodeService;
 
     @Autowired
     private NoteRepository noteRepository;
@@ -34,7 +34,7 @@ public class NoteController {
         noteRepository.save(note);
         //获得学生 和 node
         Student thisStudent = userService.findStudentByName(user_name);
-        Node thisNode = nodeService.findByNodeId(course_id+" "+mindmap_id,node_id);
+        GraphNode thisNode = graphNodeService.findByNodeId(course_id, mindmap_id,node_id);
 
         if (thisNode!=null&&thisStudent!=null) {
             //创建学生-> WRITE-> note关系
@@ -42,7 +42,7 @@ public class NoteController {
             userService.saveStudent(thisStudent);
             //创建Node->  HAS_NOTE -> note关系
             thisNode.saveNote(note);
-            nodeService.save(thisNode);
+            graphNodeService.save(thisNode);
             s.setSuccess(true);
         }
         return s;
@@ -56,13 +56,13 @@ public class NoteController {
         List<Note> notes = new LinkedList<>();
         //获得学生 和 node
         Student thisStudent = userService.findStudentByName(user_name);
-        Node thisNode = nodeService.findByNodeId(course_id+" "+mindmap_id,node_id);
+        GraphNode thisNode = graphNodeService.findByNodeId(course_id, mindmap_id,node_id);
 
         if (thisNode==null)
             return null;
         Note[] stu_notes= userService.getStudentNotes(thisStudent.getId());
 
-        Note[] node_notes= nodeService.getNotes(thisNode.getLong_id());
+        Note[] node_notes= graphNodeService.getNotes(thisNode.getLong_id());
 
 
         for (Note stu_note : stu_notes){
@@ -85,12 +85,12 @@ public class NoteController {
         List<Note> notes = new LinkedList<>();
         //获得学生 和 node
         Student thisStudent = userService.findStudentByName(user_name);
-        Node thisNode = nodeService.findByNodeId(course_id+" "+mindmap_id,node_id);
+        GraphNode thisNode = graphNodeService.findByNodeId(course_id, mindmap_id,node_id);
         if (thisNode==null)
             return null;
         Note[] stu_notes= userService.getStudentNotes(thisStudent.getId());
 
-        Note[] node_notes= nodeService.getNotes(thisNode.getLong_id());
+        Note[] node_notes= graphNodeService.getNotes(thisNode.getLong_id());
 
 
         for (Note stu_note : stu_notes){
@@ -114,12 +114,12 @@ public class NoteController {
         List<Note> notes = new LinkedList<>();
         //获得学生 和 node
         Student thisStudent = userService.findStudentByName(user_name);
-        Node thisNode = nodeService.findByNodeId(course_id+" "+mindmap_id,node_id);
+        GraphNode thisNode = graphNodeService.findByNodeId(course_id, mindmap_id,node_id);
         if (thisNode==null)
             return null;
         Note[] stu_notes= userService.getStudentNotes(thisStudent.getId());
 
-        Note[] node_notes= nodeService.getNotes(thisNode.getLong_id());
+        Note[] node_notes= graphNodeService.getNotes(thisNode.getLong_id());
 
         for (Note node_note : node_notes){
             if(node_note.getAccess().equals("private"))

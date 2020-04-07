@@ -21,11 +21,13 @@ public class MindmapController {
     @Autowired
     private GraphService graphService;
     @Autowired
-    private NodeService nodeService;
+    private GraphNodeService graphNodeService;
     @Autowired
     private NodeChildService nodeChildService;
     @Autowired
     private JenaService jenaService;
+    @Autowired
+    private NodeService nodeService;
 
     private Gson gson = new Gson();
 
@@ -50,9 +52,6 @@ public class MindmapController {
 
         if (result_mindmap != null) {
             json = result_mindmap.getJson_string();
-            MindmapJson mindmapJson = gson.fromJson(json, MindmapJson.class);
-            Graph_json graphJson = mindmapToGraph(mindmapJson);
-            json = gson.toJson(graphJson);
         }
         return json;
     }
@@ -181,6 +180,9 @@ public class MindmapController {
                         referRelationship.setTarget(target);
                         references.add(referRelationship);
                         break;
+                    case "super-sub":
+                        source.getChildren().add(target);
+                        break;
                     case "pre-suc":
                         source.getSuccessors().add(target);
                         break;
@@ -211,75 +213,80 @@ public class MindmapController {
         return success;
     }
 
-    @RequestMapping(value = "/save_mindmap/{course_id}/{mindmap_id}", method = RequestMethod.POST)
-    public Success save_mindmap(@PathVariable String course_id, @PathVariable String mindmap_id, @RequestBody String json_string) {
-        this.course_id = course_id;
-        this.mindmap_id = mindmap_id;
-
-        Success success = new Success();
-        success.setSuccess(false);
-
-        //获得课程
-        Course course = courseService.findByCourseId(course_id);
-        if (course == null) {
-            return success;
-        }
-
-        // 需要判断该mindmap是否已经存在
-        // 若存在，则做修改，否则新建
-        boolean if_exist = false;
-        Mindmap tempMindmap = mindmapService.findByMindmapId(mindmap_id);
-        if (tempMindmap != null)
-            if_exist = true;
-
-        Mindmap_json mindmap_json = gson.fromJson(json_string, Mindmap_json.class);
-
-        String mindmap_name = mindmap_json.getMeta().getName();
-
-        Node root_node = mindmap_json.getData();
-
-        //向每个node添加course_mindmap属性
-        //并且对于已存在的node 将所有和次node有关系的节点都全都链接到新节点上
-        root_node.setCourse_mindmap(course_id + " " + mindmap_id);
-        root_node = recurseForNode(root_node);
-
-        //存下node_root，其余node会自动生成
-        nodeService.save(root_node);
-
-        //保存mindmap
-        Mindmap mindmap = new Mindmap();
-        mindmap.setJson_string(json_string);
-        mindmap.setMindmap_id(mindmap_id);
-        mindmap.setMindmap_name(mindmap_name);
-
-        //保存两者关系
-        mindmap.setRootNode(root_node);
-        mindmapService.save(mindmap);
-
-        course.owns(mindmap);
-        courseService.save(course);
-
-        // 若已存在，则删除原先的mindmap
-        if (if_exist) {
-            Node tempRootNode = mindmapService.findRootNode(tempMindmap.getId());
-            deleteChildren(tempRootNode);
-            nodeService.delete(tempRootNode);
-            mindmapService.delete(tempMindmap);
-        }
-
-        success.setSuccess(true);
-        return success;
-    }
+//    @RequestMapping(value = "/save_mindmap/{course_id}/{mindmap_id}", method = RequestMethod.POST)
+//    public Success save_mindmap(@PathVariable String course_id, @PathVariable String mindmap_id, @RequestBody String json_string) {
+//        this.course_id = course_id;
+//        this.mindmap_id = mindmap_id;
+//
+//        Success success = new Success();
+//        success.setSuccess(false);
+//
+//        //获得课程
+//        Course course = courseService.findByCourseId(course_id);
+//        if (course == null) {
+//            return success;
+//        }
+//
+//        // 需要判断该mindmap是否已经存在
+//        // 若存在，则做修改，否则新建
+//        boolean if_exist = false;
+//        Mindmap tempMindmap = mindmapService.findByMindmapId(mindmap_id);
+//        if (tempMindmap != null)
+//            if_exist = true;
+//
+//        Mindmap_json mindmap_json = gson.fromJson(json_string, Mindmap_json.class);
+//
+//        String mindmap_name = mindmap_json.getMeta().getName();
+//
+//        Node root_node = mindmap_json.getData();
+//
+//        //向每个node添加course_mindmap属性
+//        //并且对于已存在的node 将所有和次node有关系的节点都全都链接到新节点上
+//        root_node.setCourse_mindmap(course_id + " " + mindmap_id);
+//        root_node = recurseForNode(root_node);
+//
+//        //存下node_root，其余node会自动生成
+//        nodeService.save(root_node);
+//
+//        //保存mindmap
+//        Mindmap mindmap = new Mindmap();
+//        mindmap.setJson_string(json_string);
+//        mindmap.setMindmap_id(mindmap_id);
+//        mindmap.setMindmap_name(mindmap_name);
+//
+//        //保存两者关系
+//        mindmap.setRootNode(root_node);
+//        mindmapService.save(mindmap);
+//
+//        course.owns(mindmap);
+//        courseService.save(course);
+//
+//        // 若已存在，则删除原先的mindmap
+//        if (if_exist) {
+//            Node tempRootNode = mindmapService.findRootNode(tempMindmap.getId());
+//            deleteChildren(tempRootNode);
+//            nodeService.delete(tempRootNode);
+//            mindmapService.delete(tempMindmap);
+//        }
+//
+//        success.setSuccess(true);
+//        return success;
+//    }
 
     @RequestMapping(value = "/mindmap_node_count/{mindmap_id}", method = RequestMethod.GET)
     public List<NodeCount> getNodeCounts(@PathVariable String mindmap_id) {
         return mindmapService.getNodeCount(mindmap_id);
     }
 
+    @RequestMapping(value = "/graph_node_count/{graph_id}", method = RequestMethod.GET)
+    public List<NodeCount> getGraphNodeCounts(@PathVariable String graph_id) {
+        return graphService.getNodeCount(graph_id);
+    }
+
     @RequestMapping(value = "/mindmap_delete/{mindmap_id}", method = RequestMethod.DELETE)
     public Success deleteMindmap(@PathVariable String mindmap_id) {
         Success success = new Success();
-        boolean flag = mindmapService.deleteMindmapById(mindmap_id);
+        boolean flag = graphService.deleteGraphById(mindmap_id);
         success.setSuccess(flag);
         return success;
     }
@@ -293,8 +300,8 @@ public class MindmapController {
     }
 
     @RequestMapping(value = "/getNode/{id}", method = RequestMethod.GET)
-    public Node getNode(@PathVariable long id) {
-        Node node = nodeService.getNodeByLongId(id);
+    public GraphNode getNode(@PathVariable long id) {
+        GraphNode node = graphNodeService.getNodeByLongId(id);
         return node;
     }
 
@@ -304,98 +311,98 @@ public class MindmapController {
     }
 
     //recursion 递归
-    private Node recurseForNode(Node node_root) {
-        if (node_root.getChildren() != null) {
-            for (Node child : node_root.getChildren()) {
+//    private Node recurseForNode(Node node_root) {
+//        if (node_root.getChildren() != null) {
+//            for (Node child : node_root.getChildren()) {
+//
+//                String course_mindmap = course_id + " " + mindmap_id;
+//
+//                child.setCourse_mindmap(course_mindmap);
+//                // 若该节点在数据库中已经存在，则把它的所有子节点全都链接到新节点上
+//                String nodeId = child.getId();
+//                GraphNode tempNode = nodeService.findByNodeId(course_id, mindmap_id, nodeId);
+//                if (tempNode != null) {
+//                    Long id = tempNode.getLong_id();
+//                    // Courseware
+//                    Courseware[] coursewares = nodeService.findCoursewares(id);
+//                    // Link
+//                    Link[] links = nodeService.findLinks(id);
+//                    // Material
+//                    Material[] materials = nodeService.findMaterials(id);
+//                    // Assignment-Multiple
+//                    AssignmentMultiple[] assignmentMultiples = nodeService.findAssignmentMultiple(id);
+//                    // Assignment-Short
+//                    AssignmentShort[] assignmentShorts = nodeService.findAssignmentShort(id);
+//                    //Assignment-Judge
+//                    AssignmentJudgment[] assignmentJudgments = nodeService.findAssignmentJudgements(id);
+//                    // delete the origin node
+//                    nodeService.delete(tempNode);
+//                    // save the new node
+//                    nodeService.save(child);
+//
+//                    if (coursewares.length > 0) {
+//                        for (Courseware c : coursewares) {
+//                            String coursewareName = c.getCourseware_name();
+//                            nodeChildService.deleteCoursewareFather(coursewareName);
+//                            nodeChildService.createCoursewareFather(coursewareName, course_mindmap, nodeId);
+//                        }
+//                    }
+//
+//                    if (links.length > 0) {
+//                        for (Link l : links) {
+//                            String linkAddress = l.getLink_address();
+//                            nodeChildService.deleteLinkFather(linkAddress);
+//                            nodeChildService.createLinkFather(linkAddress, course_mindmap, nodeId);
+//                        }
+//                    }
+//
+//                    if (materials.length > 0) {
+//                        for (Material m : materials) {
+//                            String materialName = m.getMaterialName();
+//                            nodeChildService.deleteMaterialFather(materialName);
+//                            nodeChildService.createMaterialFather(materialName, course_mindmap, nodeId);
+//                        }
+//                    }
+//
+//                    if (assignmentMultiples.length > 0) {
+//                        for (AssignmentMultiple am : assignmentMultiples) {
+//                            Long multiId = am.getId();
+//                            nodeChildService.deleteAssignmentMultiFather(multiId);
+//                            nodeChildService.createAssignmentMultiFather(multiId, course_mindmap, nodeId);
+//                        }
+//                    }
+//
+//                    if (assignmentShorts.length > 0) {
+//                        for (AssignmentShort as : assignmentShorts) {
+//                            Long shortId = as.getId();
+//                            nodeChildService.deleteAssignmentShortFather(shortId);
+//                            nodeChildService.createAssignmentShortFather(shortId, course_mindmap, nodeId);
+//                        }
+//                    }
+//
+//                    if (assignmentJudgments.length > 0) {
+//                        for (AssignmentJudgment aj : assignmentJudgments) {
+//                            Long ajId = aj.getId();
+//                            nodeChildService.deleteAssignmentShortFather(ajId);
+//                            nodeChildService.createAssignmentShortFather(ajId, course_mindmap, nodeId);
+//                        }
+//                    }
+//
+//                }
+//                child = recurseForNode(child);
+//            }
+//        }
+//        return node_root;
+//    }
 
-                String course_mindmap = course_id + " " + mindmap_id;
-
-                child.setCourse_mindmap(course_mindmap);
-                // 若该节点在数据库中已经存在，则把它的所有子节点全都链接到新节点上
-                String nodeId = child.getId();
-                Node tempNode = nodeService.findByNodeId(course_mindmap, nodeId);
-                if (tempNode != null) {
-                    Long id = tempNode.getLong_id();
-                    // Courseware
-                    Courseware[] coursewares = nodeService.findCoursewares(id);
-                    // Link
-                    Link[] links = nodeService.findLinks(id);
-                    // Material
-                    Material[] materials = nodeService.findMaterials(id);
-                    // Assignment-Multiple
-                    AssignmentMultiple[] assignmentMultiples = nodeService.findAssignmentMultiple(id);
-                    // Assignment-Short
-                    AssignmentShort[] assignmentShorts = nodeService.findAssignmentShort(id);
-                    //Assignment-Judge
-                    AssignmentJudgment[] assignmentJudgments = nodeService.findAssignmentJudgements(id);
-                    // delete the origin node
-                    nodeService.delete(tempNode);
-                    // save the new node
-                    nodeService.save(child);
-
-                    if (coursewares.length > 0) {
-                        for (Courseware c : coursewares) {
-                            String coursewareName = c.getCourseware_name();
-                            nodeChildService.deleteCoursewareFather(coursewareName);
-                            nodeChildService.createCoursewareFather(coursewareName, course_mindmap, nodeId);
-                        }
-                    }
-
-                    if (links.length > 0) {
-                        for (Link l : links) {
-                            String linkAddress = l.getLink_address();
-                            nodeChildService.deleteLinkFather(linkAddress);
-                            nodeChildService.createLinkFather(linkAddress, course_mindmap, nodeId);
-                        }
-                    }
-
-                    if (materials.length > 0) {
-                        for (Material m : materials) {
-                            String materialName = m.getMaterialName();
-                            nodeChildService.deleteMaterialFather(materialName);
-                            nodeChildService.createMaterialFather(materialName, course_mindmap, nodeId);
-                        }
-                    }
-
-                    if (assignmentMultiples.length > 0) {
-                        for (AssignmentMultiple am : assignmentMultiples) {
-                            Long multiId = am.getId();
-                            nodeChildService.deleteAssignmentMultiFather(multiId);
-                            nodeChildService.createAssignmentMultiFather(multiId, course_mindmap, nodeId);
-                        }
-                    }
-
-                    if (assignmentShorts.length > 0) {
-                        for (AssignmentShort as : assignmentShorts) {
-                            Long shortId = as.getId();
-                            nodeChildService.deleteAssignmentShortFather(shortId);
-                            nodeChildService.createAssignmentShortFather(shortId, course_mindmap, nodeId);
-                        }
-                    }
-
-                    if (assignmentJudgments.length > 0) {
-                        for (AssignmentJudgment aj : assignmentJudgments) {
-                            Long ajId = aj.getId();
-                            nodeChildService.deleteAssignmentShortFather(ajId);
-                            nodeChildService.createAssignmentShortFather(ajId, course_mindmap, nodeId);
-                        }
-                    }
-
-                }
-                child = recurseForNode(child);
-            }
-        }
-        return node_root;
-    }
-
-    private void deleteChildren(Node node_root) {
-        if (node_root.getChildren() != null) {
-            for (Node child : node_root.getChildren()) {
-                nodeService.delete(child);
-                deleteChildren(child);
-            }
-        }
-    }
+//    private void deleteChildren(Node node_root) {
+//        if (node_root.getChildren() != null) {
+//            for (Node child : node_root.getChildren()) {
+//                nodeService.delete(child);
+//                deleteChildren(child);
+//            }
+//        }
+//    }
 
     private void changeMindmapNodeToGraphNode(MindmapData currentNode, String parentID, ArrayList<Map<String, Object>> graph) {
         // MindmapData currentNode = mindmap.getData();
@@ -421,7 +428,7 @@ public class MindmapController {
             MindmapData currentChild = currentNode.getChildren().get(i);
             changeMindmapNodeToGraphNode(currentChild, currentNode.getId(), graph);
 
-            GraphEdge graphEdge = new GraphEdge(currentNode.getId() + currentChild.getId(), currentNode.getId(), currentChild.getId(), "pre-suc", 10, "前序知识");
+            GraphEdge graphEdge = new GraphEdge(currentNode.getId() + currentChild.getId(), currentNode.getId(), currentChild.getId(), "super-sub", 10, "包含");
 
             Map<String, Object> edgeStructure = new HashMap<>();
             edgeStructure.put("group", "edges");
@@ -434,6 +441,13 @@ public class MindmapController {
         ArrayList<Map<String, Object>> graphData = new ArrayList<>();
         changeMindmapNodeToGraphNode(mindmapJson.getData(), "", graphData);
         return new Graph_json(mindmapJson.getMeta(), mindmapJson.getFormat(), graphData);
+    }
+
+    @RequestMapping(value = "/graph_delete", method = RequestMethod.GET)
+    public String deleteGraph(){
+        graphService.deleteGraphById("1062af89cef4beda");
+
+        return "ok";
     }
 
     @RequestMapping(value = "/mindmap_move", method = RequestMethod.GET)
@@ -529,7 +543,7 @@ public class MindmapController {
         if(children_arr!=null) {
             for (int i = 0; i < children.size(); i++) {
                 Node child = children.get(i);
-                graphNode.getSuccessors().add(rootNodeToGraph(child, graph));
+                graphNode.getChildren().add(rootNodeToGraph(child, graph));
             }
         }
 

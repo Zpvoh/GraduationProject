@@ -9,21 +9,21 @@ import java.util.Set;
 @NodeEntity(label = "GraphNode")
 public class GraphNode {
     public GraphNode() {
+        this.children = new HashSet<>();
         this.successors = new HashSet<>();
         this.synonyms = new HashSet<>();
         this.antonyms = new HashSet<>();
     }
 
     public GraphNode(String id, String name, int weight) {
+        this();
         this.id = id;
         this.name = name;
         this.weight = weight;
-        this.successors = new HashSet<>();
-        this.synonyms = new HashSet<>();
-        this.antonyms = new HashSet<>();
     }
 
     public GraphNode(String id, String name, int weight, Set<Material> materials, Set<Courseware> coursewares, Set<Link> links, Set<AssignmentMultiple> assignmentMultiples, Set<AssignmentJudgment> assignmentJudgments, Set<AssignmentShort> assignmentShorts, Set<Note> notes) {
+        this();
         this.id = id;
         this.name = name;
         this.weight = weight;
@@ -34,9 +34,6 @@ public class GraphNode {
         this.assignmentJudgments = assignmentJudgments;
         this.assignmentShorts = assignmentShorts;
         this.notes = notes;
-        this.successors = new HashSet<>();
-        this.synonyms = new HashSet<>();
-        this.antonyms = new HashSet<>();
     }
 
     @Id
@@ -48,6 +45,9 @@ public class GraphNode {
 
     private String name;
     private int weight;
+
+    @Relationship(type="INCLUDE")
+    private Set<GraphNode> children;
 
     @Relationship(type="HAS_SUCCESSOR")
     private Set<GraphNode> successors;
@@ -218,5 +218,13 @@ public class GraphNode {
         int labelSize = weight / 4;
         int width = labelSize * name.length() + 60;
         return new GraphNode_json(id, name, weight, width, labelSize, "");
+    }
+
+    public Set<GraphNode> getChildren() {
+        return children;
+    }
+
+    public void setChildren(Set<GraphNode> children) {
+        this.children = children;
     }
 }

@@ -19,7 +19,7 @@ import java.util.HashMap;
 @CrossOrigin
 public class CoursewaresController {
     @Autowired
-    private NodeService nodeService;
+    private GraphNodeService graphNodeService;
     @Autowired
     private NodeChildService nodeChildService;
     @Autowired
@@ -34,10 +34,10 @@ public class CoursewaresController {
     public String[] coursewares(@PathVariable String course_id, @PathVariable String mindmap_id,
                                         @PathVariable String node_id) {
         //找到node
-        Node result_node = nodeService.findByNodeId(course_id + " " + mindmap_id, node_id);
+        GraphNode result_node = graphNodeService.findByNodeId(course_id, mindmap_id, node_id);
         if (result_node==null)
             return null;
-        Courseware[] coursewares = nodeService.findCoursewares(result_node.getLong_id());
+        Courseware[] coursewares = graphNodeService.findCoursewares(result_node.getLong_id());
 
         String[] ans = new String[coursewares.length];
 
@@ -68,7 +68,7 @@ public class CoursewaresController {
         File dest = new File(filePath + fileName);
 
         //找到node
-        Node result_node = nodeService.findByNodeId(course_id + " " + mindmap_id, node_id);
+        GraphNode result_node = graphNodeService.findByNodeId(course_id, mindmap_id, node_id);
         if (result_node != null) {
             // 检测是否存在目录
             if (!dest.getParentFile().exists()) {
@@ -88,7 +88,7 @@ public class CoursewaresController {
 
             //建立关系
             result_node.addCourseware(courseware);
-            nodeService.save(result_node);
+            graphNodeService.save(result_node);
             s.setSuccess(true);
         }
         return s;

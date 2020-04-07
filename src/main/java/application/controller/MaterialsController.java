@@ -18,7 +18,7 @@ import java.io.*;
 @CrossOrigin
 public class MaterialsController {
     @Autowired
-    private NodeService nodeService;
+    private GraphNodeService graphNodeService;
     @Autowired
     private NodeChildService nodeChildService;
     @Autowired
@@ -32,10 +32,10 @@ public class MaterialsController {
                                                               @PathVariable String node_id) {
 
         //找到node
-        Node result_node = nodeService.findByNodeId(course_id + " " + mindmap_id, node_id);
+        GraphNode result_node = graphNodeService.findByNodeId(course_id, mindmap_id, node_id);
         if(result_node==null)
             return null;
-        Material[] materials = nodeService.findMaterials(result_node.getLong_id());
+        Material[] materials = graphNodeService.findMaterials(result_node.getLong_id());
 
         String[] ans = new String[materials.length];
 
@@ -66,7 +66,7 @@ public class MaterialsController {
         File dest = new File(filePath + fileName);
 
         //找到node
-        Node result_node = nodeService.findByNodeId(course_id + " " + mindmap_id, node_id);
+        GraphNode result_node = graphNodeService.findByNodeId(course_id, mindmap_id, node_id);
         if (result_node != null) {
             // 检测是否存在目录
             if (!dest.getParentFile().exists()) {
@@ -86,7 +86,7 @@ public class MaterialsController {
 
             //建立关系
             result_node.setMaterial(ma);
-            nodeService.save(result_node);
+            graphNodeService.save(result_node);
             s.setSuccess(true);
         }
         return s;
@@ -158,11 +158,11 @@ public class MaterialsController {
                           @PathVariable String node_id) {
 
         //找到node
-        Node result_node = nodeService.findByNodeId(course_id + " " + mindmap_id, node_id);
+        GraphNode result_node = graphNodeService.findByNodeId(course_id, mindmap_id, node_id);
         if(result_node==null)
             return null;
 
-        return nodeService.findLinks(result_node.getLong_id());
+        return graphNodeService.findLinks(result_node.getLong_id());
     }
 
     @RequestMapping(value = "/upload_link/{course_id}/{mindmap_id}/{node_id}", method = RequestMethod.POST)
@@ -173,7 +173,7 @@ public class MaterialsController {
         s.setSuccess(false);
 
         //找到node
-        Node result_node = nodeService.findByNodeId(course_id + " " + mindmap_id, node_id);
+        GraphNode result_node = graphNodeService.findByNodeId(course_id, mindmap_id, node_id);
 
         if (result_node != null) {
             link.setNode(result_node.getLong_id() + "");
@@ -183,7 +183,7 @@ public class MaterialsController {
 
             //建立关系
             result_node.setLink(link);
-            nodeService.save(result_node);
+            graphNodeService.save(result_node);
             s.setSuccess(true);
         }
         return s;

@@ -105,14 +105,14 @@ public class Node {
         return assignmentShorts;
     }
 
-    public void setAssignmentShorts(AssignmentShort assignmentShort) {
+    public void setAssignmentShort(AssignmentShort assignmentShort) {
         if (assignmentShorts == null) {
             assignmentShorts = new HashSet<>();
         }
         assignmentShorts.add(assignmentShort);
     }
 
-    public void setAssignmentJudgments(AssignmentJudgment judgment) {
+    public void setAssignmentJudgment(AssignmentJudgment judgment) {
         if (assignmentJudgments == null)
             assignmentJudgments = new HashSet<>();
         assignmentJudgments.add(judgment);
