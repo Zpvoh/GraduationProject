@@ -19,10 +19,19 @@ public class NaiveReasoningStrategy implements ReasoningStrategy {
             GraphNode node = nodes.next();
             Vertex tmp = new Vertex(node.getLong_id());
             precursorGraph.addVertex(tmp);
+        }
+        nodes = graph.getGraphNodes().iterator();
+        while(nodes.hasNext()){
+            GraphNode node = nodes.next();
             Iterator<GraphNode> successors = node.getSuccessors().iterator();
             while(successors.hasNext()){
                 GraphNode successor = successors.next();
                 precursorGraph.addEdges(node.getLong_id(), successor.getLong_id());
+            }
+            Iterator<GraphNode> children = node.getChildren().iterator();
+            while(children.hasNext()){
+                GraphNode child = children.next();
+                precursorGraph.addEdges(node.getLong_id(), child.getLong_id());
             }
         }
         return precursorGraph;

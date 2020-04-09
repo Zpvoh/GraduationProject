@@ -10,6 +10,7 @@ public class AssignmentShort {
     private String short_id;
     private String title;
     private String correct_answer;
+    private int value;
 
 
     public Long getId() {
@@ -44,4 +45,11 @@ public class AssignmentShort {
         this.correct_answer = correct_answer;
     }
 
+    public int getValue() {
+        return value;
+    }
+
+    public void setValue(int value) {
+        this.value = value;
+    }
 }

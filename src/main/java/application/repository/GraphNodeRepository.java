@@ -48,6 +48,15 @@ public interface GraphNodeRepository extends Neo4jRepository<GraphNode, Long> {
     @Query("match (n:GraphNode) - [:INCLUDE] - (children:GraphNode) where ID(n) = {0} return children")
     GraphNode[] findChildren(long id);
 
+    @Query("match (n:GraphNode) - [:HAS_SUCCESSOR] - (children:GraphNode) where ID(n) = {0} return children")
+    GraphNode[] findSuccessor(long id);
+
+    @Query("match (n:GraphNode) - [:IS_SYNONYM] - (children:GraphNode) where ID(n) = {0} return children")
+    GraphNode[] findSynonym(long id);
+
+    @Query("match (n:GraphNode) - [:IS_ANTONYM] - (children:GraphNode) where ID(n) = {0} return children")
+    GraphNode[] findAntonym(long id);
+
     @Query("match (n:GraphNode) - [:HAS_NOTE] - (note) where ID(n) = {0} return note")
     Note[] findNotes(long id);
 }

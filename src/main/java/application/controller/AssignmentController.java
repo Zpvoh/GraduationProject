@@ -350,7 +350,7 @@ public class AssignmentController {
 
             short_student.setAssignmentLongId(aShort.getId());
             short_student.setTitle(aShort.getTitle());
-            short_student.setFullScore(10);
+            short_student.setFullScore(aShort.getValue()!=0?aShort.getValue():10);
 
             StudentAnswer studentAnswer = nodeChildService.getStudentAns(student.getId(), aShort.getId());
             if (studentAnswer == null) {

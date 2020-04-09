@@ -60,6 +60,18 @@ public class GraphNodeService {
         return nodeRepository.findChildren(id);
     }
 
+    public GraphNode[] findSuccessor(long id ){
+        return nodeRepository.findSuccessor(id);
+    }
+
+    public GraphNode[] findSynonym(long id ){
+        return nodeRepository.findSynonym(id);
+    }
+
+    public GraphNode[] findAntonym(long id ){
+        return nodeRepository.findAntonym(id);
+    }
+
     public Note[] getNotes(long id){
         return nodeRepository.findNotes(id);
     }

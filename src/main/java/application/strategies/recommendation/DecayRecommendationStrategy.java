@@ -17,11 +17,15 @@ public class DecayRecommendationStrategy implements RecommendationStrategy {
 
     @Override
     public ImportanceSortedList useStrategy(PrecursorGraph precursorGraph, EvaluationList evaluationList) {
-        List<VertexWithValue> verticesWithValue = ImportanceSortedList.generateVertexWithValue(precursorGraph.getVertices(), evaluationList.getValues());
+//        List<VertexWithValue> verticesWithValue = ImportanceSortedList.generateVertexWithValue(precursorGraph.getVertices(), evaluationList.getValues());
+        for(int i =0; i<evaluationList.getValues().size(); i++){
+            evaluationList.setValueByIndex(i, evaluationList.getValueByIndex(i));
+        }
         List<VertexWithValue> N_n_sorted = ImportanceSortedList.argsort(precursorGraph.getVertices(), evaluationList.getValues());
         List<Double> importanceList = new ArrayList<>(precursorGraph.getVertices().size());
         HashMap<Long, Integer> N_n_map = new HashMap<>(N_n_sorted.size());
         for (int order = 0; order < N_n_sorted.size(); order++) {
+            importanceList.add(0.0);
             N_n_map.put(N_n_sorted.get(order).getVertex().getLongId(), order);
         }
 
@@ -31,9 +35,9 @@ public class DecayRecommendationStrategy implements RecommendationStrategy {
 
             List<VertexWithValue> successors = new ArrayList<>();
             for (Edge edge : precursorGraph.getEdges()) {
-                long beginId = precursorGraph.getIndexById(edge.getBeginIndex());
+                long beginId = precursorGraph.getVertices().get(edge.getEndIndex()).getLongId();
                 if(beginId == N_n_sorted.get(order).getVertex().getLongId()){
-                    Vertex vertex = precursorGraph.getVertices().get(edge.getEndIndex());
+                    Vertex vertex = precursorGraph.getVertices().get(edge.getBeginIndex());
                     successors.add(new VertexWithValue(vertex, -edge.getP()));
                 }
             }
@@ -49,7 +53,7 @@ public class DecayRecommendationStrategy implements RecommendationStrategy {
 
             double importance = importance_n + alpha * importance_r;
 
-            importanceList.add(index, importance);
+            importanceList.set(index, importance);
         }
 
         ImportanceSortedList result = new ImportanceSortedList(precursorGraph, importanceList);

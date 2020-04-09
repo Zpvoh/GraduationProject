@@ -76,6 +76,10 @@ public class GraphService {
         return counts;
     }
 
+    public List<GraphNode> getAllNodes(String id){
+        return graphRepository.getGraphNodeByGraph_id(id);
+    }
+
     public PrecursorGraph getPrecursorGraph(Graph graph, ReasoningStrategy strategy){
         return strategy.useStrategy(graph);
     }
