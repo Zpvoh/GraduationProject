@@ -19,7 +19,9 @@ public class NaiveEvaluationStrategy implements EvaluationStrategy {
             double sumActual = (double) sum(scoreActual);
             double sumTotal = (double) sum(scoreTotal);
             double value = sumTotal > 0 ? sumActual / sumTotal : 0;
+            double relevance = scoreTotal.size() > 0 ? (float)scoreActual.size() / scoreTotal.size() : 0;
             evaluationList.getValues().add(value);
+            evaluationList.getRelevance().add(relevance);
         }
         return evaluationList;
     }

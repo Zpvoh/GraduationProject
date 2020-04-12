@@ -37,21 +37,36 @@ public class RecommendationController {
     @RequestMapping(value = "/recommendation/{course_id}/{graph_id}/{student_name}")
     public String generateRecommendationList(@PathVariable String course_id, @PathVariable String graph_id,
                                              @PathVariable String student_name){
+        long time = 0;
+        // 1. 根据graph_id从数据库查询知识图谱
+        time = System.currentTimeMillis();
         Graph graph = graphService.findByGraphId(graph_id);
+        System.out.println("1. 根据graph_id从数据库查询知识图谱: "+(System.currentTimeMillis()-time)+"ms");
+        // 2. 获取知识图谱中所有节点
+        time = System.currentTimeMillis();
         graph.setGraphNodes(new HashSet<>(graphService.getAllNodes(graph_id)));
         Iterator<GraphNode> nodeIterator = graph.getGraphNodes().iterator();
+        System.out.println("2. 获取知识图谱中所有节点: "+(System.currentTimeMillis()-time)+"ms");
+        // 3. 获取知识图谱中的所有关系
         while(nodeIterator.hasNext()){
+            time = System.currentTimeMillis();
             GraphNode node = nodeIterator.next();
             node.setSuccessors(new HashSet<>(Arrays.asList(graphNodeService.findSuccessor(node.getLong_id()))));
             node.setChildren(new HashSet<>(Arrays.asList(graphNodeService.findChildren(node.getLong_id()))));
             node.setAntonyms(new HashSet<>(Arrays.asList(graphNodeService.findAntonym(node.getLong_id()))));
             node.setSynonyms(new HashSet<>(Arrays.asList(graphNodeService.findSynonym(node.getLong_id()))));
+            System.out.println("3. 获取知识图谱中的所有关系: "+(System.currentTimeMillis()-time)+"ms");
         }
+        // 4. 形成前序图（调用前序图算法）
+        time = System.currentTimeMillis();
         PrecursorGraph precursorGraph = graphService.getPrecursorGraph(graph, new NaiveReasoningStrategy());
+        System.out.println("4. 形成前序图（调用前序图算法): "+(System.currentTimeMillis()-time)+"ms");
 
+        // 5. 构造evaluation list
         ScoreList scoreList = new ScoreList(precursorGraph);
         nodeIterator = graph.getGraphNodes().iterator();
         while(nodeIterator.hasNext()){
+            time = System.currentTimeMillis();
             String node_id = nodeIterator.next().getId();
             List<StudentAnswer> answers = nodeChildService.getStudentAnswersForANode(course_id, graph_id, node_id, student_name);
             String assignmentId =course_id + " " + graph_id + " " + node_id;
@@ -78,13 +93,18 @@ public class RecommendationController {
 
             scoreList.addScoreActualList(scoreActual);
             scoreList.addScoreTotalList(scoreTotal);
+            System.out.println("5. 构造evaluation list: "+(System.currentTimeMillis()-time)+"ms");
         }
 
         EvaluationStrategy evaluationStrategy = new NaiveEvaluationStrategy();
         EvaluationList evaluationList = evaluationStrategy.useStrategy(scoreList);
 
+        // 6. 使用推荐算法进行推荐排序
+        time = System.currentTimeMillis();
         RecommendationStrategy recommendationStrategy = new DecayRecommendationStrategy();
         ImportanceSortedList importanceSortedList = recommendationStrategy.useStrategy(precursorGraph, evaluationList);
+        System.out.println("6. 使用推荐算法进行推荐排序: "+(System.currentTimeMillis()-time)+"ms");
+        System.out.println();
         
         return gson.toJson(importanceSortedList);
     }

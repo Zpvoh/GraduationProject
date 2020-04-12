@@ -4,13 +4,15 @@ import java.util.Set;
 
 public class Vertex {
     private long longId;
+    private String id;
     private Set<Vertex> succesors;
 
     public Vertex() {
     }
 
-    public Vertex(long longId) {
+    public Vertex(long longId, String id) {
         this.longId = longId;
+        this.id = id;
     }
 
     public long getLongId() {
@@ -31,5 +33,13 @@ public class Vertex {
 
     public void addSuccesor(Vertex vertex){
         succesors.add(vertex);
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
     }
 }

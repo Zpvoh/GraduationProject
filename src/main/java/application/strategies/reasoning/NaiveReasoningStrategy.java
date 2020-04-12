@@ -17,7 +17,7 @@ public class NaiveReasoningStrategy implements ReasoningStrategy {
         Iterator<GraphNode> nodes = graph.getGraphNodes().iterator();
         while(nodes.hasNext()){
             GraphNode node = nodes.next();
-            Vertex tmp = new Vertex(node.getLong_id());
+            Vertex tmp = new Vertex(node.getLong_id(), node.getId());
             precursorGraph.addVertex(tmp);
         }
         nodes = graph.getGraphNodes().iterator();
