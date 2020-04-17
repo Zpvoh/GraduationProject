@@ -10,23 +10,20 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
-public class DecayRecommendationStrategy implements RecommendationStrategy {
-    public double theta = 0.5;
-    public double mu = 0.5;
-    public double alpha = 1;
+public class LogRecommendationStrategy implements RecommendationStrategy {
+    public double theta = 1;
+    public double alpha = 0.5;
 
-    public DecayRecommendationStrategy() {
+    public LogRecommendationStrategy() {
     }
 
-    public DecayRecommendationStrategy(double theta, double mu, double alpha) {
+    public LogRecommendationStrategy(double theta, double alpha) {
         this.theta = theta;
-        this.mu = mu;
         this.alpha = alpha;
     }
 
     @Override
     public ImportanceSortedList useStrategy(PrecursorGraph precursorGraph, EvaluationList evaluationList) {
-//        List<VertexWithValue> verticesWithValue = ImportanceSortedList.generateVertexWithValue(precursorGraph.getVertices(), evaluationList.getValues());
         for (int i = 0; i < evaluationList.getValues().size(); i++) {
             evaluationList.setValueByIndex(i, evaluationList.getValueByIndex(i));
         }
@@ -55,11 +52,10 @@ public class DecayRecommendationStrategy implements RecommendationStrategy {
 
             List<VertexWithValue> successors = new ArrayList<>();
             for (Edge edge : precursorGraph.getEdges()) {
-                long beginId = precursorGraph.getVertices().get(edge.getEndIndex()).getLongId();
+                long beginId = precursorGraph.getVertices().get(edge.getBeginIndex()).getLongId();
                 if (beginId == v.getVertex().getLongId()) {
-                    Vertex vertex = precursorGraph.getVertices().get(edge.getBeginIndex());
-//                    successors.add(new VertexWithValue(vertex, -edge.getP()));
-                    successors.add(new VertexWithValue(vertex, evaluationList.getRelevanceByIndex(edge.getBeginIndex())));
+                    Vertex vertex = precursorGraph.getVertices().get(edge.getEndIndex());
+                    successors.add(new VertexWithValue(vertex, evaluationList.getRelevanceByIndex(edge.getEndIndex())));
                 }
             }
             Collections.sort(successors);
@@ -67,9 +63,11 @@ public class DecayRecommendationStrategy implements RecommendationStrategy {
             double importance_r = 0;
             int r_order = -1;
             double lastP = 1;
+            double delta_importance_sum = 0;
+            double sum_P = 0;
             for (VertexWithValue successor : successors) {
                 double n_order = N_n_map.get(successor.getVertex().getLongId());
-                double s_importance_n = Math.exp(-theta * n_order);
+//                double s_importance_n = Math.exp(-theta * n_order);
 
                 double thisP = successor.getValue();
                 if (lastP != thisP) {
@@ -77,11 +75,14 @@ public class DecayRecommendationStrategy implements RecommendationStrategy {
                 }
                 lastP = thisP;
 
-                double s_importance_r = s_importance_n * Math.exp(-mu * r_order) * thisP;
-                importance_r += s_importance_r;
+                delta_importance_sum += thisP * (order - n_order);
+                sum_P += thisP;
             }
 
-            double importance = importance_n + alpha * importance_r;
+            double delta_importance_avg = sum_P != 0 ? delta_importance_sum / sum_P : 0;
+
+            double P = evaluationList.getRelevance().get(precursorGraph.getIndexById(v.getVertex().getLongId()));
+            double importance = importance_n * (1 + alpha * delta_importance_avg);
 
             importanceList.set(index, -importance);
         }

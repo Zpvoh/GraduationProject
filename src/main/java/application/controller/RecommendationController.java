@@ -8,9 +8,9 @@ import application.strategies.evaluation.EvaluationStrategy;
 import application.strategies.evaluation.NaiveEvaluationStrategy;
 import application.strategies.evaluation.ScoreList;
 import application.strategies.reasoning.NaiveReasoningStrategy;
-import application.strategies.recommendation.DecayRecommendationStrategy;
-import application.strategies.recommendation.ImportanceSortedList;
-import application.strategies.recommendation.RecommendationStrategy;
+import application.strategies.recommendation.*;
+import application.strategies.testRecommend.ConductTestRecommendStrategy;
+import application.strategies.testRecommend.TestRecommendStrategy;
 import com.google.gson.Gson;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -101,11 +101,20 @@ public class RecommendationController {
 
         // 6. 使用推荐算法进行推荐排序
         time = System.currentTimeMillis();
-        RecommendationStrategy recommendationStrategy = new DecayRecommendationStrategy();
+        RecommendationStrategy recommendationStrategy = new LogRecommendationStrategy(1, 0.05);
         ImportanceSortedList importanceSortedList = recommendationStrategy.useStrategy(precursorGraph, evaluationList);
         System.out.println("6. 使用推荐算法进行推荐排序: "+(System.currentTimeMillis()-time)+"ms");
+
+        time = System.currentTimeMillis();
+        TestRecommendStrategy testRecommendStrategy = new ConductTestRecommendStrategy(1);
+        List<VertexWithValue> vertexList = testRecommendStrategy.useStrategy(precursorGraph, scoreList);
+        System.out.println("7. 使用试题推荐算法进行推荐排序: "+(System.currentTimeMillis()-time)+"ms");
+
         System.out.println();
         
-        return gson.toJson(importanceSortedList);
+        List<Object> result = new ArrayList<>();
+        result.add(importanceSortedList);
+        result.add(vertexList);
+        return gson.toJson(result);
     }
 }
