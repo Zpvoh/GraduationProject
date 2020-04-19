@@ -9,5 +9,5 @@ import application.strategies.recommendation.VertexWithValue;
 import java.util.List;
 
 public interface TestRecommendStrategy {
-    List<VertexWithValue> useStrategy(PrecursorGraph precursorGraph, ScoreList scoreList);
+    List<VertexWithValue> useStrategy(PrecursorGraph precursorGraph, EvaluationList evaluationList);
 }

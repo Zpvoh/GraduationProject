@@ -12,7 +12,7 @@ public class NaiveEvaluationStrategy implements EvaluationStrategy {
     @Override
     public EvaluationList useStrategy(ScoreList scores) {
         PrecursorGraph precursorGraph = scores.getPrecursorGraph();
-        EvaluationList evaluationList = new EvaluationList(scores.getPrecursorGraph());
+        EvaluationList evaluationList = new EvaluationList(scores.getPrecursorGraph(), scores);
         for (int i = 0; i < precursorGraph.getVertices().size(); i++) {
             List<Integer> scoreActual = scores.getScoreActual().get(i);
             List<Integer> scoreTotal = scores.getScoreTotal().get(i);

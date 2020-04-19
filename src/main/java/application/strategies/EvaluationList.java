@@ -1,21 +1,26 @@
 package application.strategies;
 
+import application.strategies.evaluation.ScoreList;
+
 import java.util.ArrayList;
 import java.util.List;
 
 public class EvaluationList {
     private PrecursorGraph precursorGraph;
+    private ScoreList scoreList;
     private List<Double> values;
     private List<Double> relevance;
 
     public EvaluationList(){
         this.precursorGraph = new PrecursorGraph();
+        this.scoreList = new ScoreList();
         this.values = new ArrayList<>();
         this.relevance = new ArrayList<>();
     }
 
-    public EvaluationList(PrecursorGraph precursorGraph){
+    public EvaluationList(PrecursorGraph precursorGraph, ScoreList scoreList){
         this.precursorGraph = precursorGraph;
+        this.scoreList = scoreList;
         this.values = new ArrayList<>(precursorGraph.getVertices().size());
         this.relevance = new ArrayList<>(precursorGraph.getVertices().size());
     }
@@ -62,5 +67,13 @@ public class EvaluationList {
 
     public void setRelevance(List<Double> relevance) {
         this.relevance = relevance;
+    }
+
+    public ScoreList getScoreList() {
+        return scoreList;
+    }
+
+    public void setScoreList(ScoreList scoreList) {
+        this.scoreList = scoreList;
     }
 }

@@ -107,7 +107,7 @@ public class RecommendationController {
 
         time = System.currentTimeMillis();
         TestRecommendStrategy testRecommendStrategy = new ConductTestRecommendStrategy(1);
-        List<VertexWithValue> vertexList = testRecommendStrategy.useStrategy(precursorGraph, scoreList);
+        List<VertexWithValue> vertexList = testRecommendStrategy.useStrategy(precursorGraph, evaluationList);
         System.out.println("7. 使用试题推荐算法进行推荐排序: "+(System.currentTimeMillis()-time)+"ms");
 
         System.out.println();

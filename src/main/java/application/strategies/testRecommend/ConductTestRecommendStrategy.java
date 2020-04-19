@@ -24,8 +24,9 @@ public class ConductTestRecommendStrategy implements TestRecommendStrategy {
     }
 
     @Override
-    public List<VertexWithValue> useStrategy(PrecursorGraph precursorGraph, ScoreList scoreList) {
+    public List<VertexWithValue> useStrategy(PrecursorGraph precursorGraph, EvaluationList evaluationList) {
         List<VertexWithValue> result = new ArrayList<>();
+        ScoreList scoreList = evaluationList.getScoreList();
         for (Vertex v : precursorGraph.getVertices()) {
             double N_node = scoreList.getScoreTotal().get(precursorGraph.getIndexById(v.getLongId())).size();
             N_node = N_node == 0 ? 0 : 1 / N_node;
@@ -49,7 +50,10 @@ public class ConductTestRecommendStrategy implements TestRecommendStrategy {
             }
 
             double dR = N_node + beta * N_total_parent;
-            result.add(new VertexWithValue(v, -dR));
+            double relevance = evaluationList.getRelevanceByIndex(precursorGraph.getIndexById(v.getLongId()));
+            if (relevance < 1 && N_node != 0) {
+                result.add(new VertexWithValue(v, -dR));
+            }
         }
         Collections.sort(result);
         return result;
