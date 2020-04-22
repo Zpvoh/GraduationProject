@@ -33,6 +33,10 @@ public interface AssignmentShortRepository extends Neo4jRepository<AssignmentSho
             " where ID(n) = {0} return s")
     List<AssignmentShort> getAssignmentShortsByNodeId(long nid);
 
+    @Query("MATCH (s:Assignment_short)" +
+            " where ID(s) = {0} detach delete s")
+    void deleteAssignmentShortsByNodeId(long nid);
+
     @Query("MATCH (n:StudentAnswers) WHERE n.assignmentLongId=($assignmentLongId) AND n.studentId=($studentId) SET n.score=($score)")
     void setAnswerScore(@Param("assignmentLongId") long assignmentLongId, @Param("studentId") long studentId, @Param("score") int score);
 }

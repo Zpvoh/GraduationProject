@@ -69,6 +69,18 @@ public class NodeChildService {
         assignmentJudgmentRepository.deleteFather(id);
     }
 
+    public void deleteAssignmentMulti(long id) {
+        assignmentMultipleRepository.deleteAssignmentMultipleById(id);
+    }
+
+    public void deleteAssignmentJudge(long id) {
+        assignmentJudgmentRepository.deleteAssignmentJudgmentById(id);
+    }
+
+    public void deleteAssignmentShort(long id) {
+        assignmentShortRepository.deleteAssignmentShortsByNodeId(id);
+    }
+
     public void createAssignmentMultiFather(long id, String course_mindmap, String nodeId) {
         assignmentMultipleRepository.createFather(id, course_mindmap, nodeId);
     }

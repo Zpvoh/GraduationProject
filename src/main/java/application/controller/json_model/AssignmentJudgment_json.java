@@ -1,6 +1,7 @@
 package application.controller.json_model;
 
 public class AssignmentJudgment_json {
+    private long id;
     private String judge_id;
     private String title;
     private String correct_answer;
@@ -55,5 +56,13 @@ public class AssignmentJudgment_json {
 
     public void setValue(int value) {
         this.value = value;
+    }
+
+    public long getId() {
+        return id;
+    }
+
+    public void setId(long id) {
+        this.id = id;
     }
 }

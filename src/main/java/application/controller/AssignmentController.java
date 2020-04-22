@@ -78,7 +78,7 @@ public class AssignmentController {
 
         AssignmentShort short_result = null;
         for (AssignmentShort assignmentShort : shorts) {
-            if (assignmentShort.getTitle().equals(stu_ans.getTitle())) {
+            if (assignmentShort.getId().equals(stu_ans.getAssignmentLongId())) {
                 short_result = assignmentShort;
                 break;
             }
@@ -135,7 +135,7 @@ public class AssignmentController {
 
         AssignmentMultiple multiple_result = null;
         for (AssignmentMultiple multiple : multiples) {
-            if (multiple.getTitle().equals(stu_ans.getTitle())) {
+            if (multiple.getId().equals(stu_ans.getAssignmentLongId())) {
                 multiple_result = multiple;
                 break;
             }
@@ -206,7 +206,7 @@ public class AssignmentController {
 
         AssignmentJudgment judgment_result = null;
         for (AssignmentJudgment judgment : judgments) {
-            if (judgment.getTitle().equals(stu_ans.getTitle())) {
+            if (judgment.getId().equals(stu_ans.getAssignmentLongId())) {
                 judgment_result = judgment;
                 break;
             }
@@ -380,6 +380,7 @@ public class AssignmentController {
         for (AssignmentMultiple multiple : multiples) {
             AssignmentMultiple_json multiple_json = new AssignmentMultiple_json();
 
+            multiple_json.setId(multiple.getId());
             multiple_json.setTitle(multiple.getTitle());
             multiple_json.setOptionA(multiple.getOptionA());
             multiple_json.setOptionB(multiple.getOptionB());
@@ -407,6 +408,7 @@ public class AssignmentController {
         for (AssignmentJudgment judgment : judgments) {
             AssignmentJudgment_json judgment_json = new AssignmentJudgment_json();
 
+            judgment_json.setId(judgment.getId());
             judgment_json.setTitle(judgment.getTitle());
             judgment_json.setCorrect_answer(judgment.getCorrect_answer());
             judgment_json.setNumber(judgment.getNumber());
@@ -498,6 +500,36 @@ public class AssignmentController {
             success.setSuccess(true);
 
         }
+        return success;
+    }
+
+    @RequestMapping(value = "/delete_multiple/{id}", method = RequestMethod.GET)
+    public Success delete_multiple(@PathVariable long id) {
+        Success success = new Success();
+        success.setSuccess(true);
+
+        nodeChildService.deleteAssignmentMulti(id);
+
+        return success;
+    }
+
+    @RequestMapping(value = "/delete_judge/{id}", method = RequestMethod.GET)
+    public Success delete_judge(@PathVariable long id) {
+        Success success = new Success();
+        success.setSuccess(true);
+
+        nodeChildService.deleteAssignmentJudge(id);
+
+        return success;
+    }
+
+    @RequestMapping(value = "/delete_short/{id}", method = RequestMethod.GET)
+    public Success delete_short(@PathVariable long id) {
+        Success success = new Success();
+        success.setSuccess(true);
+
+        nodeChildService.deleteAssignmentShort(id);
+
         return success;
     }
 

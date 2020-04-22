@@ -1,6 +1,7 @@
 package application.controller.json_model;
 
 public class StudentAnswers {
+    private Long assignmentLongId;
     private String title;
     private String answer;
     private long student_id;
@@ -36,5 +37,13 @@ public class StudentAnswers {
 
     public void setStudent_id(long student_id) {
         this.student_id = student_id;
+    }
+
+    public Long getAssignmentLongId() {
+        return assignmentLongId;
+    }
+
+    public void setAssignmentLongId(Long assignmentLongId) {
+        this.assignmentLongId = assignmentLongId;
     }
 }
