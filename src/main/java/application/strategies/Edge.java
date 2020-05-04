@@ -4,11 +4,13 @@ public class Edge {
     private int beginIndex;
     private int endIndex;
     private double p;
+    private long step;
 
     public Edge(int beginIndex, int endIndex) {
         this.beginIndex = beginIndex;
         this.endIndex = endIndex;
         this.p = 1;
+        this.step = 1;
     }
 
     public double getP() {
@@ -33,5 +35,13 @@ public class Edge {
 
     public void setEndIndex(int endIndex) {
         this.endIndex = endIndex;
+    }
+
+    public long getStep() {
+        return step;
+    }
+
+    public void setStep(long step) {
+        this.step = step;
     }
 }

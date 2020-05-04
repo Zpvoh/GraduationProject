@@ -1,6 +1,7 @@
 package application.repository;
 
 import application.model.*;
+import com.google.gson.internal.LinkedTreeMap;
 import org.springframework.data.neo4j.annotation.Query;
 import org.springframework.data.neo4j.repository.Neo4jRepository;
 import org.springframework.data.repository.query.Param;
@@ -50,6 +51,12 @@ public interface GraphNodeRepository extends Neo4jRepository<GraphNode, Long> {
 
     @Query("match (n:GraphNode) - [:HAS_SUCCESSOR] -> (children:GraphNode) where ID(n) = {0} return children")
     GraphNode[] findSuccessor(long id);
+
+    @Query("match (n:GraphNode) - [:IS_SYNONYM*0..] - (y:GraphNode) " +
+            "where ID(n) = {0} " +
+            "with y match p=(y)-[:HAS_SUCCESSOR|INCLUDE*] -> (children:GraphNode) " +
+            "return children as graphNode, length(p) as step")
+    LinkedTreeMap[] findSuccessorReasoning(long id);
 
     @Query("match (n:GraphNode) - [:IS_SYNONYM] -> (children:GraphNode) where ID(n) = {0} return children")
     GraphNode[] findSynonym(long id);

@@ -37,6 +37,12 @@ public class PrecursorGraph {
         edges.add(edge);
     }
 
+    public void addEdges(Long beginId, Long endId, Long step){
+        Edge edge = new Edge(indexIdMap.get(beginId), indexIdMap.get(endId));
+        edge.setStep(step);
+        edges.add(edge);
+    }
+
     public void setEdges(List<Edge> edges) {
         this.edges = edges;
     }

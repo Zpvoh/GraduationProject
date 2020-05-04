@@ -48,18 +48,19 @@ public class RecommendationController {
         Iterator<GraphNode> nodeIterator = graph.getGraphNodes().iterator();
         System.out.println("2. 获取知识图谱中所有节点: "+(System.currentTimeMillis()-time)+"ms");
         // 3. 获取知识图谱中的所有关系
-        while(nodeIterator.hasNext()){
-            time = System.currentTimeMillis();
-            GraphNode node = nodeIterator.next();
-            node.setSuccessors(new HashSet<>(Arrays.asList(graphNodeService.findSuccessor(node.getLong_id()))));
-            node.setChildren(new HashSet<>(Arrays.asList(graphNodeService.findChildren(node.getLong_id()))));
-            node.setAntonyms(new HashSet<>(Arrays.asList(graphNodeService.findAntonym(node.getLong_id()))));
-            node.setSynonyms(new HashSet<>(Arrays.asList(graphNodeService.findSynonym(node.getLong_id()))));
-            System.out.println("3. 获取知识图谱中的所有关系: "+(System.currentTimeMillis()-time)+"ms");
-        }
+//        while(nodeIterator.hasNext()){
+//            time = System.currentTimeMillis();
+//            GraphNode node = nodeIterator.next();
+//            node.setSuccessors(new HashSet<>(Arrays.asList(graphNodeService.findSuccessor(node.getLong_id()))));
+//            node.setChildren(new HashSet<>(Arrays.asList(graphNodeService.findChildren(node.getLong_id()))));
+//            node.setAntonyms(new HashSet<>(Arrays.asList(graphNodeService.findAntonym(node.getLong_id()))));
+//            node.setSynonyms(new HashSet<>(Arrays.asList(graphNodeService.findSynonym(node.getLong_id()))));
+//            System.out.println("3. 获取知识图谱中的所有关系: "+(System.currentTimeMillis()-time)+"ms");
+//        }
         // 4. 形成前序图（调用前序图算法）
         time = System.currentTimeMillis();
-        PrecursorGraph precursorGraph = graphService.getPrecursorGraph(graph, new NaiveReasoningStrategy());
+//        PrecursorGraph precursorGraph = graphService.getPrecursorGraph(graph, new NaiveReasoningStrategy());
+        PrecursorGraph precursorGraph = graphService.getPrecursorGraphUseReasoning(graph);
         System.out.println("4. 形成前序图（调用前序图算法): "+(System.currentTimeMillis()-time)+"ms");
 
         // 5. 构造evaluation list
@@ -101,7 +102,7 @@ public class RecommendationController {
 
         // 6. 使用推荐算法进行推荐排序
         time = System.currentTimeMillis();
-        RecommendationStrategy recommendationStrategy = new LogRecommendationStrategy(1, 0.05);
+        RecommendationStrategy recommendationStrategy = new PathDecayRecommendationStrategy(1, 0.5);
         ImportanceSortedList importanceSortedList = recommendationStrategy.useStrategy(precursorGraph, evaluationList);
         System.out.println("6. 使用推荐算法进行推荐排序: "+(System.currentTimeMillis()-time)+"ms");
 

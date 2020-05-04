@@ -23,4 +23,11 @@ public interface GraphRepository extends Neo4jRepository<Graph, Long> {
 
     @Query("match (g:Graph) - [:HAS_NODE] -(n) where g.graph_id = ({graph_id}) return n")
     List<GraphNode> getGraphNodeByGraph_id(@Param("graph_id") String graph_id);
+
+    @Query("MATCH (g:Graph)-[:HAS_NODE]-(x:GraphNode)-[:IS_ANTONYM*2]-(y:GraphNode) " +
+            "where g.graph_id=({graph_id}) " +
+            "and not exists((x)-[:IS_SYNONYM]->(y)) " +
+            "and not exists((y)-[:IS_SYNONYM]->(x)) " +
+            "WITH x,y CREATE (x)-[:IS_SYNONYM]->(y)")
+    void reasonSynonymWithAntonym(@Param("graph_id") String graph_id);
 }
