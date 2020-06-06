@@ -13,7 +13,7 @@ import java.util.*;
 
 @RestController
 @CrossOrigin
-public class MindmapController {
+public class GraphController {
     @Autowired
     private CourseService courseService;
     @Autowired

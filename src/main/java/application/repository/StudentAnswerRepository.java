@@ -17,4 +17,7 @@ public interface StudentAnswerRepository extends CrudRepository<StudentAnswer, L
 
     List<StudentAnswer> findByAssignmentLongId(long aid);
 
+    @Query("match (a:StudentAnswer) where a.assignmentId starts with ({node_id}) RETURN count(distinct a.studentId)")
+    int countStudentByNode(@Param("node_id") String node_id);
+
 }

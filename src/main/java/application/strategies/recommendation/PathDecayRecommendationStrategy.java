@@ -1,9 +1,6 @@
 package application.strategies.recommendation;
 
-import application.strategies.Edge;
-import application.strategies.EvaluationList;
-import application.strategies.PrecursorGraph;
-import application.strategies.Vertex;
+import application.strategies.*;
 
 import java.util.*;
 

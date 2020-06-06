@@ -1,7 +1,5 @@
 package application.strategies;
 
-import application.strategies.evaluation.ScoreList;
-
 import java.util.ArrayList;
 import java.util.List;
 

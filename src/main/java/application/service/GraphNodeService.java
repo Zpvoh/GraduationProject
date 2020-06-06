@@ -3,11 +3,8 @@ package application.service;
 import application.controller.json_model.NodeValue;
 import application.model.*;
 import application.repository.*;
-import application.strategies.evaluation.ScoreList;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import java.util.*;
 
 @Service
 public class GraphNodeService {

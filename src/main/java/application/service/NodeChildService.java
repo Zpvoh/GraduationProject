@@ -6,7 +6,6 @@ import application.controller.json_model.NodesAccuracy;
 import application.model.*;
 import application.repository.*;
 //import jdk.nashorn.internal.ir.Assignment;
-import application.strategies.evaluation.ScoreList;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

@@ -1,12 +1,9 @@
-package application.strategies.recommendation;
+package application.strategies;
 
-import application.strategies.EvaluationList;
-import application.strategies.PrecursorGraph;
-import application.strategies.Vertex;
+import application.strategies.recommendation.VertexWithValue;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 
 public class ImportanceSortedList {
@@ -68,6 +65,14 @@ public class ImportanceSortedList {
         this.sortedVertices = sortedVertices;
     }
 
+    public EvaluationList getEvaluationList() {
+        return evaluationList;
+    }
+
+    public void setEvaluationList(EvaluationList evaluationList) {
+        this.evaluationList = evaluationList;
+    }
+
     public static List<VertexWithValue> argsort(List<Vertex> list, List<Double> values) {
         List<VertexWithValue> vertexWithValues = generateVertexWithValue(list, values);
         Collections.sort(vertexWithValues);
@@ -107,5 +112,13 @@ public class ImportanceSortedList {
         for(VertexWithValue v : vertices){
             v.setValue(v.getValue() / order);
         }
+    }
+
+    public PrecursorGraph getPrecursorGraph() {
+        return precursorGraph;
+    }
+
+    public void setPrecursorGraph(PrecursorGraph precursorGraph) {
+        this.precursorGraph = precursorGraph;
     }
 }

@@ -1,13 +1,8 @@
 package application.strategies.recommendation;
 
-import application.strategies.Edge;
-import application.strategies.EvaluationList;
-import application.strategies.PrecursorGraph;
-import application.strategies.Vertex;
+import application.strategies.*;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 
 public class DirectRecommendationStrategy implements RecommendationStrategy {

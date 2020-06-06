@@ -1,10 +1,8 @@
 package application.strategies.evaluation;
 
-import application.strategies.EvaluationList;
-import application.strategies.Vertex;
-
-import java.util.List;
+import application.strategies.ImportanceSortedList;
+import application.strategies.ScoreList;
 
 public interface EvaluationStrategy {
-    EvaluationList useStrategy(ScoreList scores);
+    ImportanceSortedList useStrategy(ScoreList scores);
 }

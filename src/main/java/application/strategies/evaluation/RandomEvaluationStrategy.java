@@ -1,14 +1,11 @@
 package application.strategies.evaluation;
 
-import application.strategies.EvaluationList;
-import application.strategies.PrecursorGraph;
-import application.strategies.ImportanceSortedList;
-import application.strategies.ScoreList;
+import application.strategies.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
-public class NaiveEvaluationStrategy implements EvaluationStrategy {
-
+public class RandomEvaluationStrategy implements EvaluationStrategy {
     @Override
     public ImportanceSortedList useStrategy(ScoreList scores) {
         PrecursorGraph precursorGraph = scores.getPrecursorGraph();
@@ -19,12 +16,20 @@ public class NaiveEvaluationStrategy implements EvaluationStrategy {
             double sumActual = (double) sum(scoreActual);
             double sumTotal = (double) sum(scoreTotal);
             double value = sumTotal > 0 ? sumActual / sumTotal : 0;
-            double relevance = scoreTotal.size() > 0 ? (float)scoreActual.size() / scoreTotal.size() : 0;
+            double relevance = scoreTotal.size() > 0 ? (float) scoreActual.size() / scoreTotal.size() : 0;
             evaluationList.getValues().add(value);
             evaluationList.getRelevance().add(relevance);
         }
-//        return evaluationList;
-        return null;
+
+        List<Vertex> N_n = precursorGraph.getVertices();
+        List<Double> importanceList = new ArrayList<>(precursorGraph.getVertices().size());
+
+        for (int i = 0; i < N_n.size(); i++) {
+            importanceList.add(Math.random());
+            N_n.get(i).setCouldPredict(true);
+        }
+
+        return new ImportanceSortedList(precursorGraph, importanceList, evaluationList);
     }
 
     private int sum(List<Integer> scores) {

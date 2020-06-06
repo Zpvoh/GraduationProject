@@ -1,4 +1,4 @@
-package application.strategies.evaluation;
+package application.strategies;
 
 import application.strategies.PrecursorGraph;
 
@@ -9,17 +9,20 @@ public class ScoreList {
     private PrecursorGraph precursorGraph;
     private List<List<Integer>> scoreActual;
     private List<List<Integer>> scoreTotal;
+    private List<Integer> assignmentNumber;
 
     public ScoreList(){
         this.precursorGraph = new PrecursorGraph();
         this.scoreActual = new ArrayList<>();
         this.scoreTotal = new ArrayList<>();
+        this.assignmentNumber = new ArrayList<>();
     }
 
     public ScoreList(PrecursorGraph precursorGraph){
         this.precursorGraph = precursorGraph;
         this.scoreActual = new ArrayList<>(precursorGraph.getVertices().size());
         this.scoreTotal = new ArrayList<>(precursorGraph.getVertices().size());
+        this.assignmentNumber = new ArrayList<>();
     }
 
     public List<List<Integer>> getScoreActual() {
@@ -40,5 +43,13 @@ public class ScoreList {
 
     public PrecursorGraph getPrecursorGraph() {
         return precursorGraph;
+    }
+
+    public List<Integer> getAssignmentNumber() {
+        return assignmentNumber;
+    }
+
+    public void setAssignmentNumber(List<Integer> assignmentNumber) {
+        this.assignmentNumber = assignmentNumber;
     }
 }
